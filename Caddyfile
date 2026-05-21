@@ -1,0 +1,21 @@
+# EVA Monitor - Caddy reverse proxy configuration
+# Place this in /etc/caddy/Caddyfile or mount into Caddy container
+
+{$DOMAIN:localhost} {
+    reverse_proxy eva-monitor:3000
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    # Cache static assets
+    @static path *.css *.js *.html *.png *.jpg *.svg *.woff2
+    header @static Cache-Control "public, max-age=3600"
+
+    # Compress responses
+    encode gzip zstd
+}

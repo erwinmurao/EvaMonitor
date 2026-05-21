@@ -1,0 +1,76 @@
+/* Cycle Done */
+.cycle-done-screen {
+  gap: 20px;
+}
+.mold-section {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.mold-section .mold-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.mold-section .mold-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.mold-section .recipe-info {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.mold-section .recipe-info strong {
+  color: var(--text);
+}
+.pairs-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin: 12px 0;
+}
+.pairs-label {
+  font-size: 1rem;
+  color: var(--text-dim);
+  min-width: 100px;
+}
+.temp-section {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.temp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.temp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.temp-field label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.temp-field input {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 1.3rem;
+  color: var(--text);
+  text-align: center;
+  min-height: 56px;
+}
+.temp-field input.prefilled {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+.temp-field input:focus {
+  border-color: var(--primary);
+  outline: none;
+}

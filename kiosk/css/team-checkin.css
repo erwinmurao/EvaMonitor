@@ -1,0 +1,54 @@
+/* Team Check-In */
+.worker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.worker-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.15s;
+}
+.worker-card.checked-in {
+  border-color: var(--success);
+  background: rgba(46,196,182,0.1);
+}
+.worker-card .worker-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 12px 0 8px;
+}
+.worker-card .worker-role {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.worker-card .check-mark {
+  font-size: 2rem;
+  color: var(--success);
+}
+
+.role-selector {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.role-btn {
+  min-height: 56px;
+  min-width: 120px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-active);
+  color: var(--text);
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.role-btn.selected {
+  border-color: var(--primary);
+  background: rgba(0,180,216,0.2);
+}

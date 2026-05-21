@@ -1,0 +1,31 @@
+/* Break Overlay */
+.break-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(155,89,182,0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  gap: 24px;
+}
+.break-overlay h2 {
+  font-size: 3rem;
+  font-weight: 800;
+}
+.break-overlay p {
+  font-size: 1.3rem;
+  opacity: 0.9;
+}
+.break-overlay .end-meal-btn {
+  min-height: 120px;
+  padding: 24px 48px;
+  font-size: 1.5rem;
+  background: white;
+  color: #9b59b6;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}

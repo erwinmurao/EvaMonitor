@@ -1,0 +1,14 @@
+# Ignore node_modules
+node_modules/
+*.log
+
+# Ignore data (mounted volume)
+data/
+backups/
+
+# Ignore env (contains secrets)
+.env
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

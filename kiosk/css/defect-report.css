@@ -1,0 +1,40 @@
+/* Defect Report */
+.defect-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.defect-type-btn {
+  min-height: 80px;
+  padding: 16px;
+  background: var(--bg-active);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.defect-type-btn.selected {
+  border-color: var(--warning);
+  background: rgba(255,159,28,0.2);
+}
+.mold-select {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.mold-select button {
+  min-height: 56px;
+  min-width: 100px;
+  padding: 12px 24px;
+  background: var(--bg-active);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.mold-select button.selected {
+  border-color: var(--primary);
+}
