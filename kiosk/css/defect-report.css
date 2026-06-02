@@ -1,40 +1,195 @@
-/* Defect Report */
-.defect-type-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+/* ═══════════════════════════════════════════
+   SCREEN: Defect Report (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-defect-report {
+  padding: 0;
 }
-.defect-type-btn {
+
+/* ─── Top Bar ─── */
+.dr-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
   min-height: 80px;
-  padding: 16px;
-  background: var(--bg-active);
-  color: var(--text);
-  border-radius: var(--radius-sm);
-  border: 2px solid transparent;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+}
+
+.dr-back-btn {
+  min-height: 72px !important;
+  min-width: 140px !important;
+  padding: 16px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
   cursor: pointer;
-  font-size: 1rem;
+  letter-spacing: 0.5px;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.dr-back-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+.dr-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ─── Section Labels ─── */
+.dr-section-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 20px 24px 10px;
   font-weight: 600;
 }
-.defect-type-btn.selected {
-  border-color: var(--warning);
-  background: rgba(255,159,28,0.2);
-}
-.mold-select {
+
+/* ─── Mold Selection ─── */
+.dr-mold-row {
   display: flex;
   gap: 12px;
-  margin-bottom: 16px;
+  padding: 0 24px;
 }
-.mold-select button {
-  min-height: 56px;
-  min-width: 100px;
-  padding: 12px 24px;
-  background: var(--bg-active);
-  color: var(--text);
-  border-radius: var(--radius-sm);
-  border: 2px solid transparent;
+
+.dr-mold-btn {
+  min-height: 64px !important;
+  min-width: 120px !important;
+  padding: 14px 32px !important;
+  font-size: 1.05rem !important;
+  font-weight: 700;
+  background: #2a3a52 !important;
+  color: var(--text) !important;
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
   cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dr-mold-btn:active { transform: scale(0.96); opacity: 0.85; }
+
+.dr-mold-btn-active {
+  border-color: #5b9ec4 !important;
+  background: rgba(91, 158, 196, 0.12) !important;
+}
+
+/* ─── Defect Type Grid ─── */
+.dr-type-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px;
+  padding: 0 24px;
+}
+
+.dr-type-btn {
+  min-height: 80px !important;
+  min-width: 0 !important;
+  padding: 16px 12px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700;
+  background: #2a3a52 !important;
+  color: var(--text) !important;
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dr-type-btn:active { transform: scale(0.96); opacity: 0.85; }
+
+.dr-type-btn-active {
+  border-color: var(--warning) !important;
+  background: rgba(255, 159, 28, 0.15) !important;
+}
+
+/* ─── Quantity Stepper ─── */
+.dr-quantity-wrap {
+  padding: 0 24px;
+}
+
+.dr-quantity-wrap .stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dr-quantity-wrap .stepper button {
+  min-height: 64px !important;
+  min-width: 64px !important;
+  padding: 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700;
+  background: #2a3a52 !important;
+  color: var(--text) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.dr-quantity-wrap .stepper button:active { transform: scale(0.93); opacity: 0.8; }
+
+.dr-quantity-wrap .stepper .value {
+  font-size: 2rem;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+  color: var(--text);
+}
+
+/* ─── Notes Textarea ─── */
+.dr-textarea {
+  display: block;
+  margin: 0 24px;
+  width: calc(100% - 48px);
+  min-height: 120px;
+  padding: 16px;
+  background: #1e293b;
+  color: var(--text);
+  border: 2px solid #3a4a62;
+  border-radius: 12px;
   font-size: 1rem;
+  font-family: inherit;
+  resize: none;
+  outline: none;
 }
-.mold-select button.selected {
-  border-color: var(--primary);
+.dr-textarea::placeholder {
+  color: var(--text-dim);
 }
+.dr-textarea:focus {
+  border-color: #5b9ec4;
+}
+
+/* ─── Confirm Button ─── */
+.dr-confirm-bar {
+  padding: 24px;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.dr-confirm-btn {
+  width: 100%;
+  max-width: 400px;
+  min-height: 100px !important;
+  min-width: 0 !important;
+  padding: 24px 36px !important;
+  font-size: 1.3rem !important;
+  font-weight: 700;
+  background: var(--warning) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.dr-confirm-btn:active { transform: scale(0.96); opacity: 0.85; }

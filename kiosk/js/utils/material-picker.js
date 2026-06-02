@@ -18,10 +18,10 @@ function createMaterialPicker(container, materials, onSelect) {
 
     const swatch = document.createElement('div');
     swatch.className = 'color-swatch';
-    swatch.style.background = mat.color.toLowerCase() === 'black' ? '#333' : '#f5f5f5';
+    swatch.style.background = '#d1d5db';
 
     const size = document.createElement('div');
-    size.style.cssText = 'font-size:0.85rem;color:var(--text-dim);margin-top:4px;';
+    size.className = 'material-size';
     size.textContent = mat.size_type;
 
     card.appendChild(swatch);

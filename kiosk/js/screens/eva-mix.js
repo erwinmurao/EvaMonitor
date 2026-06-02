@@ -12,52 +12,54 @@ let isOverridden = false;
 export function render() {
   return `
     <div class="screen" id="screen-eva-mix">
-      <div class="top-bar">
-        <button class="back-btn" id="eva-back">← Back</button>
-        <h1>🧪 EVA MIX LOG</h1>
+      <div class="em-topbar">
+        <button class="em-back-btn" id="eva-back">← Back</button>
+        <h1 class="em-title">EVA MIX LOG</h1>
       </div>
 
       <!-- Step 1: Select Feeder -->
-      <div id="eva-step-1">
-        <p class="section-label">SELECT FEEDER</p>
-        <div style="display:flex;gap:16px;">
-          <button class="btn-outline" style="min-width:150px;" id="feeder-1" data-feeder="1">Feeder 1</button>
-          <button class="btn-outline" style="min-width:150px;" id="feeder-2" data-feeder="2">Feeder 2</button>
+      <div id="eva-step-1" class="em-section">
+        <p class="em-section-label">SELECT FEEDER</p>
+        <div class="em-feeder-row">
+          <button class="em-feeder-btn" id="feeder-1" data-feeder="1">Feeder 1</button>
+          <button class="em-feeder-btn" id="feeder-2" data-feeder="2">Feeder 2</button>
         </div>
       </div>
 
       <!-- Step 2: Select Material -->
-      <div id="eva-step-2" style="margin-top:20px;">
-        <p class="section-label">SELECT MATERIAL</p>
+      <div id="eva-step-2" class="em-section">
+        <p class="em-section-label">SELECT MATERIAL</p>
         <div id="material-picker-container"></div>
       </div>
 
       <!-- Step 3: Recipe auto-fill -->
-      <div id="eva-step-3" style="margin-top:20px;display:none;">
-        <p class="section-label">MIX AMOUNTS</p>
-        <div class="recipe-info-bar" id="recipe-info-bar">
-          <p id="recipe-label-text" style="font-weight:700;"></p>
-          <p id="recipe-cook-time" style="color:var(--text-dim);"></p>
+      <div id="eva-step-3" class="em-section" style="display:none;">
+        <p class="em-section-label">MIX AMOUNTS</p>
+        <div class="em-info-bar" id="recipe-info-bar">
+          <p id="recipe-label-text" class="em-info-label"></p>
+          <p id="recipe-cook-time" class="em-info-sub"></p>
         </div>
-        <div class="amount-input">
-          <label>Small Pellets</label>
-          <input type="number" id="small-kg" inputmode="decimal" step="0.5">
-          <span class="unit">kg</span>
+        <div class="em-amount-row">
+          <label class="em-amount-label">Small Pellets</label>
+          <button class="em-step-btn" data-target="small-kg" data-dir="-1">–</button>
+          <input type="number" id="small-kg" inputmode="decimal" step="0.5" class="em-amount-input">
+          <button class="em-step-btn" data-target="small-kg" data-dir="1">+</button>
         </div>
-        <div class="amount-input">
-          <label>Big Pellets</label>
-          <input type="number" id="big-kg" inputmode="decimal" step="0.5">
-          <span class="unit">kg</span>
+        <div class="em-amount-row">
+          <label class="em-amount-label">Big Pellets</label>
+          <button class="em-step-btn" data-target="big-kg" data-dir="-1">–</button>
+          <input type="number" id="big-kg" inputmode="decimal" step="0.5" class="em-amount-input">
+          <button class="em-step-btn" data-target="big-kg" data-dir="1">+</button>
         </div>
-        <div class="recipe-info-bar">
-          <p id="computed-total">Total: 0 kg</p>
-          <p id="computed-expanded" style="color:var(--text-dim);"></p>
+        <div class="em-info-bar em-total-bar">
+          <p id="computed-total" class="em-total-text">Total: 0 kg</p>
+          <p id="computed-expanded" class="em-info-sub"></p>
         </div>
       </div>
 
-      <div class="confirm-bar" id="eva-confirm-bar" style="display:none;">
-        <button class="btn-success" style="font-size:1.3rem;min-width:250px;" id="confirm-eva-mix">
-          ✅ CONFIRM MIX
+      <div class="em-confirm-bar" id="eva-confirm-bar" style="display:none;">
+        <button class="em-confirm-btn" id="confirm-eva-mix">
+          CONFIRM MIX
         </button>
       </div>
     </div>
@@ -93,15 +95,26 @@ export async function init() {
   document.querySelectorAll('[data-feeder]').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('[data-feeder]').forEach(b => {
-        b.classList.remove('btn-primary');
-        b.classList.add('btn-outline');
+        b.classList.remove('em-feeder-btn-active');
       });
-      btn.classList.remove('btn-outline');
-      btn.classList.add('btn-primary');
+      btn.classList.add('em-feeder-btn-active');
       selectedFeeder = parseInt(btn.dataset.feeder);
     };
   });
   // Default feeder 1
+
+  // Step button handlers (+/- for mix amounts)
+  document.querySelectorAll('.em-step-btn').forEach(btn => {
+    btn.onclick = () => {
+      const input = document.getElementById(btn.dataset.target);
+      const dir = parseInt(btn.dataset.dir);
+      const step = 0.5;
+      const current = parseFloat(input.value) || 0;
+      const newVal = Math.max(0, current + dir * step);
+      input.value = newVal.toFixed(1);
+      input.dispatchEvent(new Event('input'));
+    };
+  });
   document.getElementById('feeder-1').click();
 
   // Step 2: Material picker

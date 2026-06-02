@@ -10,33 +10,31 @@ let activeDowntimeEvent = null;
 export function render() {
   return `
     <div class="screen" id="screen-downtime">
-      <div class="top-bar">
-        <button class="back-btn" id="downtime-back">← Back</button>
-        <h1>🔴 REPORT DOWNTIME</h1>
+      <div class="top-bar dt-topbar">
+        <button class="back-btn dt-back-btn" id="downtime-back">← Back</button>
+        <h1 class="dt-title">REPORT DOWNTIME</h1>
       </div>
 
       <!-- Active downtime indicator -->
-      <div id="active-downtime-banner" style="display:none;background:var(--danger);color:white;padding:16px;border-radius:var(--radius-sm);margin-bottom:16px;text-align:center;font-size:1.2rem;font-weight:700;">
+      <div id="active-downtime-banner" class="dt-active-banner" style="display:none;">
         ACTIVE DOWNTIME
-        <button class="btn-success" style="min-height:56px;margin-top:8px;padding:8px 24px;font-size:1rem;" id="end-downtime-btn">
-          ✅ END DOWNTIME
-        </button>
+        <button class="dt-end-btn" id="end-downtime-btn">END DOWNTIME</button>
       </div>
 
-      <p class="section-label">SCOPE</p>
-      <div style="display:flex;gap:12px;margin-bottom:16px;">
-        <button class="btn-outline" data-scope="station" style="min-height:56px;min-width:120px;">Station</button>
-        <button class="btn-outline" data-scope="line" style="min-height:56px;min-width:120px;">Line</button>
+      <p class="dt-section-label">SCOPE</p>
+      <div class="dt-scope-row">
+        <button class="dt-scope-btn" data-scope="station">STATION</button>
+        <button class="dt-scope-btn" data-scope="line">LINE</button>
       </div>
 
-      <p class="section-label">DOWNTIME TYPE</p>
-      <div class="downtime-type-grid" id="downtime-type-grid"></div>
+      <p class="dt-section-label">DOWNTIME TYPE</p>
+      <div class="dt-type-grid" id="downtime-type-grid"></div>
 
-      <p class="section-label">NOTES (optional)</p>
-      <textarea id="downtime-notes" style="width:100%;min-height:80px;padding:12px;background:var(--bg);color:var(--text);border:2px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;resize:vertical;" placeholder="What happened..."></textarea>
+      <p class="dt-section-label">NOTES (OPTIONAL)</p>
+      <textarea id="downtime-notes" class="dt-textarea" placeholder="What happened..."></textarea>
 
-      <div class="confirm-bar" id="downtime-confirm-bar">
-        <button class="btn-danger" style="min-width:250px;" id="confirm-downtime">🔴 START DOWNTIME</button>
+      <div class="dt-confirm-bar" id="downtime-confirm-bar">
+        <button class="dt-confirm-btn" id="confirm-downtime">START DOWNTIME</button>
       </div>
     </div>
   `;
@@ -83,11 +81,9 @@ export async function init() {
   document.querySelectorAll('[data-scope]').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('[data-scope]').forEach(b => {
-        b.classList.remove('btn-primary');
-        b.classList.add('btn-outline');
+        b.classList.remove('dt-scope-btn-active');
       });
-      btn.classList.remove('btn-outline');
-      btn.classList.add('btn-primary');
+      btn.classList.add('dt-scope-btn-active');
       selectedScope = btn.dataset.scope;
     };
   });
@@ -106,11 +102,11 @@ export async function init() {
   grid.innerHTML = '';
   for (const dt of types) {
     const btn = document.createElement('button');
-    btn.className = 'downtime-type-btn';
+    btn.className = 'dt-type-btn';
     btn.textContent = dt.name;
     btn.onclick = () => {
-      grid.querySelectorAll('.downtime-type-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
+      grid.querySelectorAll('.dt-type-btn').forEach(b => b.classList.remove('dt-type-btn-active'));
+      btn.classList.add('dt-type-btn-active');
       selectedDowntimeType = dt.id;
     };
     grid.appendChild(btn);

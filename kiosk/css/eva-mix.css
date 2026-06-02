@@ -1,47 +1,280 @@
-/* EVA Mix */
+/* ═══════════════════════════════════════════
+   SCREEN: EVA Mix Log (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-eva-mix {
+  padding: 0;
+}
+
+/* ─── Top Bar ─── */
+.em-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  min-height: 80px;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.em-back-btn {
+  min-height: 72px !important;
+  min-width: 140px !important;
+  padding: 16px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.em-back-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+.em-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Sections ─── */
+.em-section {
+  padding: 16px 24px;
+}
+
+.em-section-label {
+  font-size: 0.85rem;
+  color: #8b8b9a;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* ─── Feeder Selection ─── */
+.em-feeder-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto 8px;
+}
+
+.em-feeder-btn {
+  flex: 1;
+  min-height: 80px !important;
+  min-width: 0 !important;
+  padding: 18px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 700;
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border: 3px solid transparent !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  transition: border-color 0.12s, transform 0.08s;
+}
+.em-feeder-btn:active { transform: scale(0.97); }
+
+.em-feeder-btn-active {
+  border-color: #5b9ec4 !important;
+  background: rgba(91, 158, 196, 0.08) !important;
+}
+
+/* ─── Material Grid — fixed 3 columns ─── */
 .material-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
+
+/* Material card */
 .material-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 24px 16px;
   cursor: pointer;
   border: 3px solid transparent;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 160px;
+  justify-content: center;
+  transition: border-color 0.12s;
 }
 .material-card.selected {
-  border-color: var(--primary);
-  background: rgba(0,180,216,0.1);
+  border-color: #5b9ec4;
+  background: rgba(91, 158, 196, 0.08);
 }
+
+/* Oval swatch — pellet icon */
+.material-card .color-swatch {
+  width: 56px;
+  height: 32px;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
 .material-card .material-code {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  color: #ffffff;
 }
 .material-card .material-color {
+  font-size: 0.95rem;
+  color: #8b8b9a;
+  text-transform: uppercase;
+  margin: 2px 0;
+}
+
+.material-card .material-size {
+  font-size: 0.85rem;
+  color: #8b8b9a;
+  margin-top: 2px;
+}
+
+/* ─── Mix Amounts Section ─── */
+
+/* Info / recipe bar */
+.em-info-bar {
+  background: #c8ced6;
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin: 12px 24px;
+  text-align: center;
+}
+
+.em-info-label {
   font-size: 1rem;
-  margin: 4px 0;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
 }
-.material-card .color-swatch {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  margin: 8px auto;
-  border: 2px solid var(--border);
+
+.em-info-sub {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 4px 0 0;
 }
+
+/* Amount row — label, stepper inline */
+.em-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 24px;
+  justify-content: center;
+}
+
+.em-amount-label {
+  min-width: 140px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: right;
+}
+
+.em-amount-input {
+  background: #c8ced6;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  width: 120px;
+  min-height: 80px;
+  -moz-appearance: textfield;
+}
+.em-amount-input::-webkit-inner-spin-button,
+.em-amount-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Stepper buttons (+/-) */
+.em-step-btn {
+  min-height: 80px !important;
+  min-width: 80px !important;
+  padding: 0 !important;
+  font-size: 1.8rem !important;
+  font-weight: 700;
+  background: #6b7280 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.em-step-btn:active { transform: scale(0.93); opacity: 0.8; }
+
+/* Total bar */
+.em-total-bar {
+  background: #c8ced6;
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin: 12px 24px;
+}
+
+.em-total-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* ─── Confirm Button ─── */
+.em-confirm-bar {
+  display: flex;
+  justify-content: center;
+  padding: 20px 24px 32px;
+}
+
+.em-confirm-btn {
+  min-height: 100px !important;
+  min-width: 320px !important;
+  padding: 24px 64px !important;
+  font-size: 1.3rem !important;
+  font-weight: 700;
+  background: #5b9ec4;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.em-confirm-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+/* ─── Legacy overrides (keep compatibility) ─── */
 .recipe-info-bar {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin: 16px 0;
+  background: #c8ced6;
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin: 12px 24px;
 }
 .recipe-info-bar .auto-filled {
-  color: var(--success);
+  color: #16a34a;
   font-weight: 600;
 }
 .recipe-info-bar .overridden {
-  color: var(--warning);
+  color: #ea580c;
   font-weight: 600;
 }
 .amount-input {
@@ -53,20 +286,21 @@
 .amount-input label {
   min-width: 100px;
   font-size: 1rem;
-  color: var(--text-dim);
+  color: #8b8b9a;
 }
 .amount-input input {
-  background: var(--bg);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
+  background: #c8ced6;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
   font-size: 1.3rem;
-  color: var(--text);
+  font-weight: 700;
+  color: #1e293b;
   text-align: center;
-  width: 120px;
+  width: 100px;
   min-height: 56px;
 }
 .amount-input .unit {
-  color: var(--text-dim);
+  color: #8b8b9a;
   font-size: 1rem;
 }

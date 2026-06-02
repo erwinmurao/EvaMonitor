@@ -8,73 +8,76 @@ let goodA, badA, goodB, badB;
 export function render() {
   return `
     <div class="screen" id="screen-cycle-done">
-      <div class="top-bar">
-        <button class="back-btn" id="cycle-back">← Back</button>
-        <h1>CYCLE DONE</h1>
+      <div class="cd-topbar">
+        <button class="cd-back-btn" id="cycle-back">← Back</button>
+        <h1 class="cd-title">CYCLE DONE</h1>
       </div>
 
-      <!-- Mold A Section -->
-      <div class="mold-section" id="mold-a-section">
-        <div class="mold-header">
-          <span class="mold-label">MOLD A</span>
-          <span class="recipe-info" id="recipe-a-info"></span>
+      <!-- Mold A + Mold B side by side -->
+      <div class="cd-mold-grid">
+        <!-- Mold A Section -->
+        <div class="mold-section" id="mold-a-section">
+          <div class="mold-header">
+            <span class="mold-label">MOLD A</span>
+            <span class="recipe-info" id="recipe-a-info"></span>
+          </div>
+          <div class="pairs-row">
+            <span class="pairs-label">Good Pairs</span>
+            <div id="stepper-good-a"></div>
+          </div>
+          <div class="pairs-row">
+            <span class="pairs-label">Bad Pairs</span>
+            <div id="stepper-bad-a"></div>
+          </div>
         </div>
-        <div class="pairs-row">
-          <span class="pairs-label">Good Pairs</span>
-          <div id="stepper-good-a"></div>
-        </div>
-        <div class="pairs-row">
-          <span class="pairs-label">Bad Pairs</span>
-          <div id="stepper-bad-a"></div>
-        </div>
-      </div>
 
-      <!-- Mold B Section -->
-      <div class="mold-section" id="mold-b-section">
-        <div class="mold-header">
-          <span class="mold-label">MOLD B</span>
-          <span class="recipe-info" id="recipe-b-info"></span>
-        </div>
-        <div class="pairs-row">
-          <span class="pairs-label">Good Pairs</span>
-          <div id="stepper-good-b"></div>
-        </div>
-        <div class="pairs-row">
-          <span class="pairs-label">Bad Pairs</span>
-          <div id="stepper-bad-b"></div>
+        <!-- Mold B Section -->
+        <div class="mold-section" id="mold-b-section">
+          <div class="mold-header">
+            <span class="mold-label">MOLD B</span>
+            <span class="recipe-info" id="recipe-b-info"></span>
+          </div>
+          <div class="pairs-row">
+            <span class="pairs-label">Good Pairs</span>
+            <div id="stepper-good-b"></div>
+          </div>
+          <div class="pairs-row">
+            <span class="pairs-label">Bad Pairs</span>
+            <div id="stepper-bad-b"></div>
+          </div>
         </div>
       </div>
 
       <!-- Temperatures -->
-      <div class="temp-section">
-        <h3 style="margin-bottom:8px;">Temperatures (°C)</h3>
-        <div class="temp-grid">
-          <div class="temp-field">
+      <div class="cd-temp-section">
+        <h3 class="cd-temp-title">Temperatures (°C)</h3>
+        <div class="cd-temp-grid">
+          <div class="cd-temp-field">
             <label>Gun Stage 1</label>
             <input type="number" id="temp-gun1" inputmode="numeric">
           </div>
-          <div class="temp-field">
+          <div class="cd-temp-field">
             <label>Gun Stage 2</label>
             <input type="number" id="temp-gun2" inputmode="numeric">
           </div>
-          <div class="temp-field">
+          <div class="cd-temp-field">
             <label>Gun Stage 3</label>
             <input type="number" id="temp-gun3" inputmode="numeric">
           </div>
-          <div class="temp-field">
+          <div class="cd-temp-field">
             <label>Gun Stage 4</label>
             <input type="number" id="temp-gun4" inputmode="numeric">
           </div>
-          <div class="temp-field">
+          <div class="cd-temp-field">
             <label>Mold Temp</label>
             <input type="number" id="temp-mold" inputmode="numeric">
           </div>
         </div>
       </div>
 
-      <div class="confirm-bar">
-        <button class="btn-success" style="font-size:1.5rem;min-width:300px;" id="confirm-cycle">
-          ✅ CONFIRM CYCLE
+      <div class="cd-confirm-bar">
+        <button class="cd-confirm-btn" id="confirm-cycle">
+          CONFIRM CYCLE
         </button>
       </div>
     </div>

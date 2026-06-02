@@ -130,7 +130,7 @@ button:disabled { opacity: 0.4; pointer-events: none; }
 /* Toast notification */
 .toast-container {
   position: fixed;
-  bottom: 32px;
+  top: 32px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -145,7 +145,7 @@ button:disabled { opacity: 0.4; pointer-events: none; }
   box-shadow: var(--shadow);
   animation: toastIn 0.3s ease, toastOut 0.3s ease 1.7s;
 }
-@keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
 
 /* Section headers */
@@ -215,6 +215,647 @@ button:disabled { opacity: 0.4; pointer-events: none; }
 .gap-24 { gap: 24px; }
 .flex-1 { flex: 1; }
 .w-full { width: 100%; }
+
+/* ═══════════════════════════════════════════
+   SCREEN: Team Check-In (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Top bar — flat, no card background */
+.checkin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  min-height: 80px;
+  flex-shrink: 0;
+}
+.checkin-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.checkin-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.checkin-btn-all-done {
+  min-height: 48px !important;
+  min-width: 140px !important;
+  padding: 10px 28px !important;
+  font-size: 1rem !important;
+  font-weight: 700;
+  background: #6ba3c7;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.checkin-btn-all-done:active { transform: scale(0.95); opacity: 0.85; }
+.checkin-arrow {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  user-select: none;
+}
+.checkin-btn-start-work {
+  min-height: 80px !important;
+  min-width: 200px !important;
+  padding: 18px 36px !important;
+  font-size: 1.2rem !important;
+  font-weight: 700;
+  background: #5d9fd4;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.checkin-btn-start-work:active { transform: scale(0.95); opacity: 0.85; }
+
+/* Body — scrollable grid area */
+.checkin-body {
+  flex: 1;
+  padding: 16px 24px;
+  overflow-y: auto;
+}
+
+/* Worker grid — 4 columns */
+.worker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.worker-card {
+  background: #2a3a52;
+  border-radius: 14px;
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 160px;
+  justify-content: center;
+}
+.worker-card.checked-in {
+  border-color: var(--success);
+  background: rgba(46,196,182,0.08);
+}
+.worker-card .avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 1.5rem;
+  margin: 0 auto 4px;
+  background: #6ba3c7;
+  color: white;
+}
+.worker-card .worker-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.worker-card .worker-role {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.worker-card .check-mark {
+  font-size: 2rem;
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* ─── Modal backdrop ─── */
+.checkin-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* ─── Modal box ─── */
+.checkin-modal {
+  background: #1e2d45;
+  border-radius: 18px;
+  padding: 32px 36px;
+  width: 440px;
+  max-width: 95vw;
+  position: relative;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+}
+.checkin-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none !important;
+  border: none !important;
+  color: var(--text-dim);
+  font-size: 2rem;
+  cursor: pointer;
+  min-height: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.checkin-modal-close:active { opacity: 0.6; }
+.checkin-modal-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding-right: 36px;
+}
+
+/* Section labels */
+.checkin-section-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 14px 0 8px;
+  font-weight: 600;
+}
+
+/* Role selector — 2x2 grid */
+.checkin-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.checkin-role-btn {
+  min-height: 56px !important;
+  min-width: 0 !important;
+  padding: 12px 16px !important;
+  font-size: 1.05rem !important;
+  font-weight: 600;
+  border-radius: 10px;
+  background: #2e3e55;
+  color: var(--text);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.checkin-role-btn.selected {
+  border-color: var(--primary);
+  background: rgba(0,180,216,0.12);
+}
+
+/* PIN display */
+.checkin-pin-display {
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+  min-height: 48px;
+  letter-spacing: 10px;
+  margin: 8px 0 16px;
+  color: var(--text);
+  line-height: 48px;
+}
+
+/* Numpad — 3x4 grid */
+.checkin-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.checkin-numpad button {
+  min-height: 64px !important;
+  min-width: 0 !important;
+  font-size: 1.6rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.08s, opacity 0.12s;
+  padding: 0 !important;
+}
+.checkin-numpad button:active { transform: scale(0.93); opacity: 0.8; }
+
+/* Number buttons — light background */
+.checkin-numpad .ck-num {
+  background: #c8ced6;
+  color: #1e2d45;
+}
+
+/* Delete button — red */
+.checkin-numpad .ck-del {
+  background: var(--danger);
+  color: white;
+}
+
+/* OK button — green */
+.checkin-numpad .ck-ok {
+  background: var(--success);
+  color: white;
+}
+
+/* ─── Screen override: remove default screen padding for checkin ─── */
+#screen-team-checkin {
+  padding: 0;
+}
+
+/* ═══════════════════════════════════════════
+   SCREEN: Station Selector (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-station-selector {
+  padding: 0;
+}
+
+/* Top bar — flat dark bar, no card appearance */
+.selector-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: transparent !important;
+  border-radius: 0 !important;
+  min-height: 80px;
+  margin-bottom: 0 !important;
+}
+.selector-topbar-left,
+.selector-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Line dropdown wrapper */
+.selector-line-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown caret */
+.selector-caret {
+  font-size: 0.75em;
+  margin-left: 2px;
+}
+
+/* Dropdown menu */
+.selector-line-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #1e2d45;
+  border-radius: 12px;
+  min-width: 170px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.selector-line-dropdown.open {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.selector-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.selector-dropdown-option {
+  padding: 20px 24px;
+  color: var(--text);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 1.15rem;
+  font-weight: 600;
+  transition: background 0.1s;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+}
+
+.selector-dropdown-option:hover {
+  background: rgba(0, 180, 216, 0.2);
+}
+
+.selector-dropdown-option:active {
+  background: rgba(0, 180, 216, 0.3);
+}
+
+/* Top bar buttons — light blue rounded pills */
+.selector-topbar-btn {
+  min-height: 64px !important;
+  min-width: 64px !important;
+  padding: 14px 24px !important;
+  font-size: 1.05rem !important;
+  font-weight: 700;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-direction: row !important;
+  letter-spacing: 0.5px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.selector-topbar-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+/* Meal button active state — warning/amber color */
+.selector-topbar-btn.meal-active {
+  background: #ff9f1c !important;
+  color: white !important;
+  box-shadow: 0 0 12px rgba(255, 159, 28, 0.4);
+  animation: mealPulse 2s ease-in-out infinite;
+}
+
+@keyframes mealPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 159, 28, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(255, 159, 28, 0.7); }
+}
+
+/* Team count button — icon + number */
+.selector-team-btn {
+  gap: 12px !important;
+}
+.selector-team-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.selector-team-count {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* END SHIFT button — red */
+.selector-end-shift-btn {
+  background: var(--danger) !important;
+  color: white !important;
+}
+
+/* Section title */
+.selector-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  padding: 16px 20px 12px;
+}
+
+/* Station grid — 4 columns default */
+.selector-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 20px !important;
+  padding: 0 20px 20px !important;
+  flex: 1;
+}
+
+/* 6 cards → 3 columns */
+.selector-grid:has(> .station-card:nth-child(6):last-child) {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* 8 cards → 4 columns */
+.selector-grid:has(> .station-card:nth-child(8):last-child) {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+/* Station card */
+.station-card {
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #1e293b !important;
+  border-radius: 14px !important;
+  padding: 24px !important;
+  min-height: 220px;
+  border: none !important;
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.station-card:active { transform: scale(0.97); }
+
+/* Status dot — absolute top-right corner */
+.selector-status-dot {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Station number */
+.station-card .station-number {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding-right: 22px;
+}
+
+/* Recipe labels */
+.station-card .recipe-label {
+  font-size: 1.05rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+/* Bottom row — cycles left, avatars right */
+.selector-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* Cycle count */
+.station-card .cycle-count {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Avatars row — touch-friendly circles */
+.selector-avatars {
+  display: flex;
+  gap: 10px;
+}
+.selector-avatars .avatar {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 1.2rem !important;
+  background: #7cb8d4 !important;
+  color: white !important;
+  border-radius: 50% !important;
+  border: none !important;
+}
+.selector-avatars .avatar.on-break {
+  border: 3px solid var(--warning) !important;
+}
+
+/* ═══════════════════════════════════════════
+   SCREEN: Team Roster
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-team-roster {
+  padding: 0;
+}
+
+/* Top bar */
+.roster-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  min-height: 80px;
+  flex-shrink: 0;
+}
+
+/* Back button — light blue pill */
+.roster-btn-back {
+  min-height: 72px !important;
+  min-width: 140px !important;
+  padding: 16px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.roster-btn-back:active { transform: scale(0.95); opacity: 0.85; }
+
+/* Join Team button — light blue pill */
+.roster-btn-join {
+  min-height: 56px !important;
+  min-width: 180px !important;
+  padding: 14px 32px !important;
+  font-size: 1.1rem !important;
+  font-weight: 700;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.roster-btn-join:active { transform: scale(0.95); opacity: 0.85; }
+
+/* Roster list container */
+.roster-list {
+  flex: 1;
+  padding: 0 20px 20px;
+  overflow-y: auto;
+}
+
+/* Roster row */
+.roster-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 8px;
+  border-bottom: 1px solid #2a3a52;
+}
+.roster-row:last-child {
+  border-bottom: none;
+}
+
+/* Avatar */
+.roster-avatar {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  border-radius: 50%;
+  background: #6ba3c7;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.roster-avatar.on-break {
+  border: 3px solid var(--warning);
+}
+
+/* Info section */
+.roster-info {
+  flex: 1;
+  min-width: 0;
+}
+.roster-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.roster-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+/* Action buttons container */
+.roster-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Base action button */
+.roster-action-btn {
+  min-height: 56px !important;
+  min-width: 110px !important;
+  padding: 14px 24px !important;
+  font-size: 1rem !important;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.roster-action-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+/* Break button — yellow */
+.roster-btn-break {
+  background: var(--warning);
+  color: var(--text-dark);
+}
+.roster-btn-break.active {
+  background: var(--success);
+  color: white;
+}
+
+/* Role button — gray */
+.roster-btn-role {
+  background: #6b7280;
+  color: white;
+}
+
+/* Logout button — red */
+.roster-btn-logout {
+  background: var(--danger);
+  color: white;
+}
 
 /* Responsive */
 @media (max-width: 600px) {

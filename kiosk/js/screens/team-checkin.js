@@ -11,30 +11,40 @@ const checkedIn = new Set();
 export function render() {
   return `
     <div class="screen" id="screen-team-checkin">
-      <div class="top-bar">
-        <h1>Team Check-In</h1>
-        <div class="top-bar-actions">
-          <button class="btn-success" style="min-height:56px;min-width:200px;padding:8px 24px;" id="start-work-btn" disabled>
-            ALL DONE → START WORK
-          </button>
+      <div class="checkin-topbar">
+        <h1 class="checkin-title">Team Check-In</h1>
+        <div class="checkin-topbar-actions">
+          <button class="checkin-btn-start-work" id="start-work-btn">START WORK</button>
+          <button class="checkin-btn-all-done" id="all-done-btn" style="display:none;">ALL DONE</button>
         </div>
       </div>
 
-      <div id="worker-grid" class="worker-grid"></div>
+      <div class="checkin-body">
+        <div id="worker-grid" class="worker-grid"></div>
+      </div>
 
       <!-- Role + PIN modal -->
-      <div class="modal-backdrop" id="checkin-modal" style="display:none;">
-        <div class="modal">
-          <h3 id="modal-worker-name"></h3>
-          <p class="section-label">Select Role</p>
-          <div class="role-selector" id="role-selector"></div>
-          <p class="section-label">Enter PIN</p>
-          <div class="numpad" id="pin-numpad">
-            <div class="numpad-display" style="font-size:2rem;text-align:center;min-height:50px;letter-spacing:6px;grid-column:span 3;"></div>
-            <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
-            <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
-            <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
-            <button data-key="del" style="background:var(--danger);">⌫</button><button data-key="0">0</button><button data-key="ok" style="background:var(--success);">✓</button>
+      <div class="checkin-backdrop" id="checkin-modal" style="display:none;">
+        <div class="checkin-modal">
+          <button class="checkin-modal-close" id="modal-close">&times;</button>
+          <h2 class="checkin-modal-name" id="modal-worker-name"></h2>
+          <p class="checkin-section-label">SELECT ROLE</p>
+          <div class="checkin-role-grid" id="role-selector"></div>
+          <p class="checkin-section-label">ENTER PIN</p>
+          <div class="checkin-pin-display" id="pin-display">-</div>
+          <div class="checkin-numpad" id="pin-numpad">
+            <button data-key="1" class="ck-num">1</button>
+            <button data-key="2" class="ck-num">2</button>
+            <button data-key="3" class="ck-num">3</button>
+            <button data-key="4" class="ck-num">4</button>
+            <button data-key="5" class="ck-num">5</button>
+            <button data-key="6" class="ck-num">6</button>
+            <button data-key="7" class="ck-num">7</button>
+            <button data-key="8" class="ck-num">8</button>
+            <button data-key="9" class="ck-num">9</button>
+            <button data-key="del" class="ck-del">&larr;</button>
+            <button data-key="0" class="ck-num">0</button>
+            <button data-key="ok" class="ck-ok">&#10003;</button>
           </div>
         </div>
       </div>
@@ -48,7 +58,8 @@ export function init() {
   const modalName = document.getElementById('modal-worker-name');
   const roleSelector = document.getElementById('role-selector');
   const startWorkBtn = document.getElementById('start-work-btn');
-  const pinDisplay = modal.querySelector('.numpad-display');
+  const allDoneBtn = document.getElementById('all-done-btn');
+  const pinDisplay = document.getElementById('pin-display');
 
   const roles = [
     { id: 1, name: 'Operator' },
@@ -56,6 +67,16 @@ export function init() {
     { id: 3, name: 'Trimmer' },
     { id: 4, name: 'Packer' }
   ];
+
+  // Close modal
+  document.getElementById('modal-close').onclick = () => {
+    modal.style.display = 'none';
+  };
+
+  // Close on backdrop click
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  };
 
   // Load workers
   api.workers.list().then(workers => {
@@ -92,22 +113,22 @@ export function init() {
     roleSelector.innerHTML = '';
     for (const role of roles) {
       const btn = document.createElement('button');
-      btn.className = 'role-btn';
+      btn.className = 'checkin-role-btn';
       btn.textContent = role.name;
       btn.onclick = () => {
-        roleSelector.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+        roleSelector.querySelectorAll('.checkin-role-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         selectedRole = role;
       };
       roleSelector.appendChild(btn);
     }
 
-    pinDisplay.textContent = '_';
+    pinDisplay.textContent = '-';
     modal.style.display = 'flex';
   }
 
   // Numpad handling
-  modal.querySelectorAll('.numpad button').forEach(btn => {
+  document.getElementById('pin-numpad').querySelectorAll('button').forEach(btn => {
     btn.onclick = () => {
       const key = btn.dataset.key;
       if (key === 'del') {
@@ -118,7 +139,7 @@ export function init() {
       } else if (pinValue.length < 4) {
         pinValue += key;
       }
-      pinDisplay.textContent = '*'.repeat(pinValue.length) || '_';
+      pinDisplay.textContent = pinValue.length > 0 ? '*'.repeat(pinValue.length) : '-';
     };
   });
 
@@ -131,7 +152,7 @@ export function init() {
     if (worker && worker.pin !== pinValue) {
       showToast('Invalid PIN', 'error');
       pinValue = '';
-      pinDisplay.textContent = '_';
+      pinDisplay.textContent = '-';
       return;
     }
 
@@ -155,6 +176,11 @@ export function init() {
     renderWorkers(db.workers);
     startWorkBtn.disabled = false;
   }
+
+  allDoneBtn.onclick = () => {
+    if (db.team.length === 0) { showToast('At least 1 person must check in', 'warning'); return; }
+    window.App.navigate('station-selector');
+  };
 
   startWorkBtn.onclick = () => {
     if (db.team.length === 0) { showToast('At least 1 person must check in', 'warning'); return; }

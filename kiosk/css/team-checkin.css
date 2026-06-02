@@ -1,26 +1,53 @@
 /* Team Check-In */
+
+/* Worker grid — fixed 4 columns for 10 users (3 rows + 2 cards) */
 .worker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
+
+/* Worker card — dark blue, rounded, touch-friendly */
 .worker-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
+  background: #2a3a52;
+  border-radius: 14px;
+  padding: 28px 16px;
   text-align: center;
   cursor: pointer;
   border: 3px solid transparent;
-  transition: all 0.15s;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 180px;
+  justify-content: center;
 }
 .worker-card.checked-in {
   border-color: var(--success);
-  background: rgba(46,196,182,0.1);
+  background: rgba(46, 196, 182, 0.08);
 }
-.worker-card .worker-name {
-  font-size: 1.3rem;
+
+/* Avatar — light blue circle with white initial */
+.worker-card .avatar {
+  width: 72px;
+  height: 72px;
+  font-size: 1.6rem;
+  margin: 0 auto 4px;
+  background: #60a5fa;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  margin: 12px 0 8px;
+}
+
+.worker-card .worker-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 4px;
 }
 .worker-card .worker-role {
   font-size: 0.9rem;
@@ -29,6 +56,7 @@
 .worker-card .check-mark {
   font-size: 2rem;
   color: var(--success);
+  font-weight: 700;
 }
 
 .role-selector {
@@ -50,5 +78,5 @@
 }
 .role-btn.selected {
   border-color: var(--primary);
-  background: rgba(0,180,216,0.2);
+  background: rgba(0, 180, 216, 0.2);
 }

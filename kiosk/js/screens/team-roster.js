@@ -6,14 +6,11 @@ import { showToast } from '../utils/toast.js';
 export function render() {
   return `
     <div class="screen" id="screen-team-roster">
-      <div class="top-bar">
-        <button class="back-btn" id="roster-back">← Back</button>
-        <h1>👥 Team Roster</h1>
-        <div class="top-bar-actions">
-          <button class="top-bar-btn" id="btn-join" style="background:var(--success);color:var(--text-dark);">👋 JOIN</button>
-        </div>
+      <div class="roster-topbar">
+        <button class="roster-btn-back" id="roster-back">← Back</button>
+        <button class="roster-btn-join" id="btn-join">JOIN TEAM</button>
       </div>
-      <div id="roster-list"></div>
+      <div class="roster-list" id="roster-list"></div>
     </div>
   `;
 }
@@ -30,27 +27,27 @@ export async function init() {
 
   for (const member of team) {
     const isOnBreak = !!db.workerBreaks[member.worker_id];
-    const card = document.createElement('div');
-    card.style.cssText = 'display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg-card);border-radius:var(--radius-sm);margin-bottom:12px;';
-    card.innerHTML = `
-      <div class="avatar${isOnBreak ? ' on-break' : ''}">${member.name.charAt(0)}</div>
-      <div style="flex:1;">
-        <div style="font-weight:700;font-size:1.1rem;">${member.name}</div>
-        <div style="color:var(--text-dim);">${member.role}</div>
+    const row = document.createElement('div');
+    row.className = 'roster-row';
+    row.innerHTML = `
+      <div class="roster-avatar${isOnBreak ? ' on-break' : ''}">${member.name.charAt(0)}</div>
+      <div class="roster-info">
+        <div class="roster-name">${member.name}</div>
+        <div class="roster-subtitle">${isOnBreak ? 'On break' : 'Tap to check in'}</div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-${isOnBreak ? 'success' : 'warning'}" style="min-height:48px;min-width:80px;padding:8px;font-size:0.9rem;" data-action="${isOnBreak ? 'end-break' : 'break'}" data-worker="${member.worker_id}">
-          ${isOnBreak ? '✅ End Break' : '☕ Break'}
+      <div class="roster-actions">
+        <button class="roster-action-btn roster-btn-break${isOnBreak ? ' active' : ''}" data-action="${isOnBreak ? 'end-break' : 'break'}" data-worker="${member.worker_id}">
+          ${isOnBreak ? 'End Break' : 'Break'}
         </button>
-        <button class="btn-outline" style="min-height:48px;min-width:80px;padding:8px;font-size:0.9rem;" data-action="reassign" data-worker="${member.worker_id}">
-          ✏️ Role
+        <button class="roster-action-btn roster-btn-role" data-action="reassign" data-worker="${member.worker_id}">
+          Role
         </button>
-        <button class="btn-danger" style="min-height:48px;min-width:60px;padding:8px;font-size:0.9rem;" data-action="logout" data-worker="${member.worker_id}">
-          👋
+        <button class="roster-action-btn roster-btn-logout" data-action="logout" data-worker="${member.worker_id}">
+          Logout
         </button>
       </div>
     `;
-    rosterList.appendChild(card);
+    rosterList.appendChild(row);
   }
 
   // Action handlers

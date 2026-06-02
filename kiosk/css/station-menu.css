@@ -1,0 +1,151 @@
+/* ═══════════════════════════════════════════
+   SCREEN: Station Menu (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-station-menu {
+  padding: 0;
+}
+
+/* ─── Top Bar ─── */
+.sm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  min-height: 80px;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.sm-back-btn {
+  min-height: 72px !important;
+  min-width: 140px !important;
+  padding: 16px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.sm-back-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+.sm-station-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ─── Mold Recipe Section ─── */
+.sm-recipe-section {
+  padding: 8px 24px 16px;
+}
+
+.sm-mold-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sm-mold-card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.sm-mold-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5b9ec4;
+  margin-bottom: 6px;
+}
+
+.sm-mold-info {
+  font-size: 0.9rem;
+  color: #8b8b9a;
+  line-height: 1.5;
+}
+
+/* ─── Tile Grid (2x2) ─── */
+.sm-tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 8px 24px 24px;
+  flex: 1;
+}
+
+/* Base tile */
+.sm-tile {
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16px;
+  min-height: 200px !important;
+  min-width: 0 !important;
+  padding: 24px !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.sm-tile:active { transform: scale(0.96); opacity: 0.85; }
+
+/* Tile icon */
+.sm-tile-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tile label */
+.sm-tile-label {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+/* ─── CYCLE DONE (green) ─── */
+.sm-tile-cycle {
+  background: #66c2a5;
+  color: #1a3a2e;
+}
+.sm-tile-cycle .sm-tile-icon {
+  color: #2d8a6e;
+}
+
+/* ─── EVA MIX (sky blue) ─── */
+.sm-tile-mix {
+  background: #87ceeb;
+  color: #1a3a52;
+}
+.sm-tile-mix .sm-tile-icon {
+  color: #4a9ec4;
+}
+
+/* ─── DEFECT (orange) ─── */
+.sm-tile-defect {
+  background: #f18f01;
+  color: #4a2800;
+}
+.sm-tile-defect .sm-tile-icon {
+  color: #ffd700;
+}
+
+/* ─── DOWNTIME (red) ─── */
+.sm-tile-down {
+  background: #e64a19;
+  color: #ffffff;
+}
+.sm-tile-down .sm-tile-icon {
+  color: #ff8a80;
+}

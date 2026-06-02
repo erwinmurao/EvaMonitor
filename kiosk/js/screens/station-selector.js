@@ -6,32 +6,98 @@ import { showToast } from '../utils/toast.js';
 export function render() {
   return `
     <div class="screen" id="screen-station-selector">
-      <div class="top-bar">
-        <h1 id="selector-title">Station Selector</h1>
-        <div class="top-bar-actions">
-          <button class="top-bar-btn" id="btn-meal">🍽️ MEAL</button>
-          <button class="top-bar-btn" id="btn-eva">🧪 EVA MIX</button>
-          <button class="top-bar-btn" id="btn-downtime">🔴 DOWNTIME</button>
-          <button class="top-bar-btn" id="btn-team">👥 <span id="team-count">0</span></button>
-          <button class="top-bar-btn" id="btn-end-shift" style="background:var(--danger);color:white;">END SHIFT</button>
+      <div class="selector-topbar">
+        <div class="selector-topbar-left">
+          <button class="selector-topbar-btn" id="btn-home">HOME</button>
+          <div class="selector-line-dropdown-wrapper">
+            <button class="selector-topbar-btn" id="btn-line-select">LINE 1 <span class="selector-caret">▾</span></button>
+            <div class="selector-line-dropdown" id="line-dropdown">
+              <div class="selector-dropdown-content" id="line-options"></div>
+            </div>
+          </div>
+        </div>
+        <div class="selector-topbar-right">
+          <button class="selector-topbar-btn" id="btn-meal">MEAL</button>
+          <button class="selector-topbar-btn" id="btn-eva">EVA MIX</button>
+          <button class="selector-topbar-btn" id="btn-downtime">DOWN TIME</button>
+          <button class="selector-topbar-btn selector-team-btn" id="btn-team">
+            <span class="selector-team-icon">👥</span>
+            <span class="selector-team-count" id="team-count">0</span>
+          </button>
+          <button class="selector-topbar-btn selector-end-shift-btn" id="btn-end-shift">END SHIFT</button>
         </div>
       </div>
-      <div class="card-grid" id="station-grid"></div>
+      <div class="selector-section-title">Station Selector</div>
+      <div class="selector-grid" id="station-grid"></div>
     </div>
   `;
 }
 
 export async function init() {
   const grid = document.getElementById('station-grid');
-  const titleEl = document.getElementById('selector-title');
   const teamCountEl = document.getElementById('team-count');
+  const lineBtn = document.getElementById('btn-line-select');
+  const lineDropdown = document.getElementById('line-dropdown');
+  const lineOptions = document.getElementById('line-options');
 
   const lineId = db.lineId;
   const shiftId = db.shiftId;
   const team = db.team;
   teamCountEl.textContent = team.length;
 
-  // Load stations + assignments
+  // HOME button — navigate to shift-start screen
+  document.getElementById('btn-home').onclick = () => {
+    window.App.navigate('shift-start');
+  };
+
+  // Load all lines for dropdown
+  let allLines = [];
+  try {
+    allLines = await api.get('/lines');
+  } catch {
+    allLines = [];
+  }
+
+  // Populate line dropdown
+  lineOptions.innerHTML = allLines.map(line => 
+    `<div class="selector-dropdown-option" data-line-id="${line.id}">${line.name}</div>`
+  ).join('');
+
+  // Line dropdown toggle
+  lineBtn.onclick = (e) => {
+    e.stopPropagation();
+    lineDropdown.classList.toggle('open');
+  };
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!lineBtn.contains(e.target) && !lineDropdown.contains(e.target)) {
+      lineDropdown.classList.remove('open');
+    }
+  });
+
+  // Line selection
+  lineOptions.querySelectorAll('.selector-dropdown-option').forEach(opt => {
+    opt.onclick = async (e) => {
+      e.stopPropagation();
+      const newLineId = parseInt(opt.dataset.lineId);
+      if (newLineId === lineId) {
+        lineDropdown.classList.remove('open');
+        return;
+      }
+      
+      // Update line and reload
+      db.lineId = newLineId;
+      const selectedLine = allLines.find(l => l.id === newLineId);
+      if (selectedLine) {
+        lineBtn.textContent = `${selectedLine.name} ▼`;
+      }
+      lineDropdown.classList.remove('open');
+      init(); // Reload stations for new line
+    };
+  });
+
+  // Load stations + assignments for current line
   let stations = [];
   let assignments = [];
   try {
@@ -100,16 +166,15 @@ export async function init() {
     const card = document.createElement('div');
     card.className = 'card station-card';
     card.innerHTML = `
-      <div class="status-indicator">
-        <span class="status-dot ${status}"></span>
-        ${statusIcon}
-      </div>
+      <span class="status-dot ${status} selector-status-dot"></span>
       <div class="station-number">Station ${station.station_number}</div>
-      <div class="recipe-label"><strong>A:</strong> ${recipeA.label}</div>
-      <div class="recipe-label"><strong>B:</strong> ${recipeB.label}</div>
-      <div class="cycle-count">${cycles} cycles</div>
-      <div class="avatars">
-        ${team.map(t => `<div class="avatar${db.workerBreaks[t.worker_id] ? ' on-break' : ''}" title="${t.name}">${t.name.charAt(0)}</div>`).join('')}
+      <div class="recipe-label">A: ${recipeA.label}</div>
+      <div class="recipe-label">B: ${recipeB.label}</div>
+      <div class="selector-card-bottom">
+        <div class="cycle-count">${cycles} cycles</div>
+        <div class="avatars selector-avatars">
+          ${team.slice(0, 4).map(t => `<div class="avatar${db.workerBreaks[t.worker_id] ? ' on-break' : ''}" title="${t.name}">${t.name.charAt(0)}</div>`).join('')}
+        </div>
       </div>
     `;
     card.onclick = () => {
@@ -128,7 +193,8 @@ export async function init() {
       startMealBreak();
     }
   };
-  document.getElementById('btn-meal').textContent = db.mealBreakActive ? '🍽️ END MEAL' : '🍽️ MEAL';
+  document.getElementById('btn-meal').textContent = db.mealBreakActive ? 'END MEAL' : 'MEAL';
+  document.getElementById('btn-meal').classList.toggle('meal-active', !!db.mealBreakActive);
 
   document.getElementById('btn-eva').onclick = () => window.App.navigate('eva-mix');
   document.getElementById('btn-downtime').onclick = () => window.App.navigate('downtime');
@@ -167,8 +233,7 @@ export async function init() {
       db.mealBreakActive = true;
       db.mealBreakId = result.id;
       showToast('Meal break started');
-      document.getElementById('btn-meal').textContent = '🍽️ END MEAL';
-      // Re-render to show meal overlay on stations
+      document.getElementById('btn-meal').textContent = 'END MEAL';
       init();
     } catch (err) {
       showToast(err.message, 'error');

@@ -32,13 +32,15 @@
 }
 
 .back-btn {
-  min-height: 56px;
-  min-width: 56px;
-  padding: 8px 16px;
-  background: var(--bg-active);
-  color: var(--text);
+  min-height: 72px;
+  min-width: 140px;
+  padding: 16px 32px;
+  background: #5b9ec4;
+  color: white;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }

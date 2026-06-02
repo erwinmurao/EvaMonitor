@@ -1,76 +1,240 @@
-/* Cycle Done */
-.cycle-done-screen {
-  gap: 20px;
+/* ═══════════════════════════════════════════
+   SCREEN: Cycle Done (pixel-perfect)
+   ═══════════════════════════════════════════ */
+
+/* Remove default screen padding */
+#screen-cycle-done {
+  padding: 0;
 }
+
+/* ─── Top Bar ─── */
+.cd-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  min-height: 80px;
+}
+
+.cd-back-btn {
+  min-height: 72px !important;
+  min-width: 140px !important;
+  padding: 16px 32px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  background: #5b9ec4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 14px !important;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.cd-back-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+.cd-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ─── Mold Sections (side by side) ─── */
+.cd-mold-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 8px 24px 16px;
+}
+
 .mold-section {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 28px 32px;
 }
+
 .mold-section .mold-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
+
 .mold-section .mold-label {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--primary);
+  color: #5b9ec4;
 }
+
 .mold-section .recipe-info {
   font-size: 0.9rem;
-  color: var(--text-dim);
+  color: #8b8b9a;
 }
 .mold-section .recipe-info strong {
-  color: var(--text);
+  color: #ffffff;
 }
+
+/* ─── Pairs Row ─── */
 .pairs-row {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   align-items: center;
-  margin: 12px 0;
+  margin: 28px 0;
 }
+
 .pairs-label {
-  font-size: 1rem;
-  color: var(--text-dim);
+  font-size: 1.1rem;
+  color: #8b8b9a;
   min-width: 100px;
 }
+
+/* Stepper override — gray buttons */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.stepper button {
+  min-height: 80px !important;
+  min-width: 80px !important;
+  font-size: 1.8rem !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  background: #6b7280 !important;
+  color: white !important;
+  border: none !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.stepper button:active { transform: scale(0.93); opacity: 0.8; }
+.stepper .value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* ─── Temperature Section ─── */
+.cd-temp-section {
+  padding: 8px 24px 16px;
+}
+
+.cd-temp-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.cd-temp-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.cd-temp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cd-temp-field label {
+  font-size: 0.85rem;
+  color: #8b8b9a;
+  font-weight: 500;
+}
+
+.cd-temp-field input {
+  background: transparent;
+  border: 2px solid #4a4a5a;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  min-height: 56px;
+  -moz-appearance: textfield;
+}
+.cd-temp-field input::-webkit-inner-spin-button,
+.cd-temp-field input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cd-temp-field input.prefilled {
+  color: #8b8b9a;
+  border-color: #4a4a5a;
+}
+.cd-temp-field input:focus {
+  border-color: #5b9ec4;
+  outline: none;
+}
+
+/* ─── Confirm Button ─── */
+.cd-confirm-bar {
+  display: flex;
+  justify-content: center;
+  padding: 16px 24px 32px;
+}
+
+.cd-confirm-btn {
+  min-height: 100px !important;
+  min-width: 320px !important;
+  padding: 24px 64px !important;
+  font-size: 1.3rem !important;
+  font-weight: 700;
+  background: #2ec4b6;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: transform 0.08s, opacity 0.12s;
+}
+.cd-confirm-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+/* ─── Legacy overrides (keep compat) ─── */
 .temp-section {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
 }
 .temp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-top: 12px;
 }
 .temp-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .temp-field label {
   font-size: 0.85rem;
-  color: var(--text-dim);
+  color: #8b8b9a;
 }
 .temp-field input {
-  background: var(--bg);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
+  background: transparent;
+  border: 2px solid #4a4a5a;
+  border-radius: 10px;
+  padding: 14px;
   font-size: 1.3rem;
-  color: var(--text);
+  font-weight: 600;
+  color: #ffffff;
   text-align: center;
   min-height: 56px;
 }
 .temp-field input.prefilled {
-  color: var(--text-dim);
-  border-color: var(--border);
+  color: #8b8b9a;
 }
 .temp-field input:focus {
-  border-color: var(--primary);
+  border-color: #5b9ec4;
   outline: none;
 }

@@ -10,29 +10,31 @@ let quantityStepper;
 export function render() {
   return `
     <div class="screen" id="screen-defect-report">
-      <div class="top-bar">
-        <button class="back-btn" id="defect-back">← Back</button>
-        <h1>⚠️ REPORT DEFECT</h1>
+      <div class="top-bar dr-topbar">
+        <button class="back-btn dr-back-btn" id="defect-back">← Back</button>
+        <h1 class="dr-title">REPORT DEFECT</h1>
       </div>
 
-      <p class="section-label">MOLD</p>
-      <div class="mold-select" id="defect-mold-select">
-        <button data-slot="A">Mold A</button>
-        <button data-slot="B">Mold B</button>
-        <button data-slot="both">Both</button>
+      <p class="dr-section-label">MOLD</p>
+      <div class="dr-mold-row" id="defect-mold-select">
+        <button class="dr-mold-btn" data-slot="A">MOLD A</button>
+        <button class="dr-mold-btn" data-slot="B">MOLD B</button>
+        <button class="dr-mold-btn" data-slot="both">BOTH</button>
       </div>
 
-      <p class="section-label">DEFECT TYPE</p>
-      <div class="defect-type-grid" id="defect-type-grid"></div>
+      <p class="dr-section-label">DEFECT TYPE</p>
+      <div class="dr-type-grid" id="defect-type-grid"></div>
 
-      <p class="section-label">QUANTITY</p>
-      <div id="defect-quantity" style="margin:16px 0;"></div>
+      <p class="dr-section-label">QUANTITY</p>
+      <div class="dr-quantity-wrap">
+        <div id="defect-quantity"></div>
+      </div>
 
-      <p class="section-label">NOTES (optional)</p>
-      <textarea id="defect-notes" style="width:100%;min-height:80px;padding:12px;background:var(--bg);color:var(--text);border:2px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;resize:vertical;" placeholder="Any additional notes..."></textarea>
+      <p class="dr-section-label">NOTES (OPTIONAL)</p>
+      <textarea id="defect-notes" class="dr-textarea" placeholder="What happened..."></textarea>
 
-      <div class="confirm-bar">
-        <button class="btn-warning" style="min-width:250px;" id="confirm-defect">⚠️ REPORT DEFECT</button>
+      <div class="dr-confirm-bar">
+        <button class="dr-confirm-btn" id="confirm-defect">REPORT DEFECT</button>
       </div>
     </div>
   `;
@@ -47,12 +49,12 @@ export async function init() {
   // Mold selection
   document.querySelectorAll('#defect-mold-select button').forEach(btn => {
     btn.onclick = () => {
-      document.querySelectorAll('#defect-mold-select button').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
+      document.querySelectorAll('#defect-mold-select button').forEach(b => b.classList.remove('dr-mold-btn-active'));
+      btn.classList.add('dr-mold-btn-active');
       selectedMoldSlot = btn.dataset.slot;
     };
   });
-  document.querySelector('#defect-mold-select [data-slot="A"]').classList.add('selected');
+  document.querySelector('#defect-mold-select [data-slot="A"]').classList.add('dr-mold-btn-active');
 
   // Load defect types
   let defectTypes = [];
@@ -67,11 +69,11 @@ export async function init() {
   grid.innerHTML = '';
   for (const dt of defectTypes) {
     const btn = document.createElement('button');
-    btn.className = 'defect-type-btn';
+    btn.className = 'dr-type-btn';
     btn.textContent = dt.name;
     btn.onclick = () => {
-      grid.querySelectorAll('.defect-type-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
+      grid.querySelectorAll('.dr-type-btn').forEach(b => b.classList.remove('dr-type-btn-active'));
+      btn.classList.add('dr-type-btn-active');
       selectedDefectType = dt.id;
     };
     grid.appendChild(btn);

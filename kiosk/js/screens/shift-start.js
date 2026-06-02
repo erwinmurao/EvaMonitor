@@ -9,44 +9,42 @@ export function render() {
   return `
     <div class="screen active" id="screen-shift-start">
       <!-- Landing Page: All Available Shifts -->
-      <div id="landing-page" style="display:flex;flex-direction:column;min-height:100vh;padding:24px;">
-        <div class="flex-center flex-col gap-16" style="flex:1;width:100%;max-width:1200px;margin:0 auto;">
-          <h1 style="font-size:2.5rem;margin-bottom:8px;">EVA Monitor</h1>
-          <p style="color:var(--text-dim);font-size:1.1rem;margin-bottom:32px;">Available Shifts</p>
+      <div id="landing-page" class="ss-landing">
+        <div class="ss-landing-content">
+          <h1 class="ss-main-title">Eva Monitor</h1>
+          <p class="ss-subtitle">Available Shifts</p>
           
           <!-- All Available Shifts Grid -->
-          <div id="available-shifts" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;width:100%;margin-bottom:40px;"></div>
+          <div id="available-shifts" class="ss-shifts-grid"></div>
 
-          <!-- OR Divider -->
-          <div style="width:100%;text-align:center;margin:32px 0;">
-            <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px;">
-            <p style="color:var(--text-dim);font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">OR START NEW SHIFT</p>
-            <hr style="border:none;border-top:1px solid var(--border);margin-top:16px;">
+          <!-- Divider -->
+          <div class="ss-divider-section">
+            <div class="ss-divider-line"></div>
+            <p class="ss-divider-text">OR START NEW SHIFT!</p>
           </div>
 
           <!-- Start New Shift Button -->
-          <button class="btn-primary" style="min-width:300px;min-height:120px;" id="select-line-btn">
-            <span style="font-size:1.3rem;">+ SELECT PRODUCTION LINE</span>
+          <button class="ss-primary-btn" id="select-line-btn">
+            START NEW SHIFT
           </button>
         </div>
       </div>
 
       <!-- Line Selection Page -->
-      <div id="line-selection-page" style="display:none;min-height:100vh;padding:24px;">
-        <div class="flex-center flex-col gap-24">
-          <button class="btn-outline" style="position:absolute;top:24px;left:24px;min-width:80px;min-height:60px;padding:8px 16px;font-size:1rem;" id="back-btn">← BACK</button>
-          
-          <h1 style="font-size:2.5rem;">EVA Monitor</h1>
-          <p style="color:var(--text-dim);font-size:1.1rem;">Select Production Line</p>
+      <div id="line-selection-page" class="ss-line-page">
+        <button class="ss-back-btn" id="back-btn">← Back</button>
+        <div class="ss-line-content">
+          <h1 class="ss-main-title">Eva Monitor</h1>
+          <p class="ss-subtitle">Select Production Line</p>
           
           <!-- Line Buttons -->
-          <div class="flex-center gap-16 flex-wrap" id="line-selector" style="max-width:900px;"></div>
+          <div class="ss-line-selector" id="line-selector"></div>
           
           <!-- Status Message -->
-          <p style="color:var(--text-dim);font-size:1rem;min-height:28px;" id="shift-status"></p>
+          <p class="ss-status" id="shift-status"></p>
           
           <!-- Action Buttons Container -->
-          <div id="action-buttons" style="display:flex;flex-direction:column;gap:12px;align-items:center;min-height:280px;"></div>
+          <div id="action-buttons" class="ss-action-buttons"></div>
         </div>
       </div>
     </div>
@@ -87,19 +85,7 @@ export function init() {
       if (totalShifts > 0) {
         allShifts.forEach(({ line, shift }) => {
           const card = document.createElement('div');
-          card.style.cssText = `
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 24px;
-            border: 2px solid var(--primary);
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            text-align: center;
-            min-height: 200px;
-            justify-content: space-between;
-          `;
+          card.className = 'ss-shift-card';
           
           const startTime = new Date(shift.started_at);
           const now = new Date();
@@ -110,19 +96,15 @@ export function init() {
             : `${durationMinutes}m running`;
 
           card.innerHTML = `
-            <div>
-              <div style="font-size:1.8rem;font-weight:700;color:var(--primary);">${line.name}</div>
-              <div style="font-size:0.9rem;color:var(--text-dim);margin-top:4px;">${line.num_stations} stations</div>
+            <div class="ss-shift-card-header">
+              <div class="ss-shift-card-name">${line.name}</div>
+              <div class="ss-shift-card-stations">${line.num_stations} stations</div>
             </div>
-            
-            <div style="background:rgba(46,196,182,0.1);padding:12px;border-radius:8px;">
-              <div style="font-size:1.4rem;font-weight:700;color:var(--success);">✓ Shift ${shift.shift_number}</div>
-              <div style="font-size:0.9rem;color:var(--text-dim);margin-top:8px;">${durationDisplay}</div>
+            <div class="ss-shift-card-shift">
+              <div class="ss-shift-card-shift-num">Shift ${shift.shift_number}</div>
+              <div class="ss-shift-card-duration">${durationDisplay}</div>
             </div>
-            
-            <button class="btn-success" style="width:100%;min-height:80px;">
-              <span style="font-size:1.2rem;">✓ JOIN THIS SHIFT</span>
-            </button>
+            <button class="ss-join-btn">JOIN PRODUCTION LINE</button>
           `;
 
           card.querySelector('button').onclick = () => {
@@ -136,17 +118,16 @@ export function init() {
         });
       } else {
         availableShiftsDiv.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
-            <p style="font-size:1.2rem;margin-bottom:16px;">No active shifts available</p>
-            <p style="font-size:0.9rem;">Select a production line to start a new shift</p>
+          <div class="ss-empty-state">
+            <p class="ss-empty-text">No Shift Available</p>
           </div>
         `;
       }
     } catch (err) {
       console.error('Failed to load shifts:', err);
       availableShiftsDiv.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--danger);">
-          <p>Error loading shifts</p>
+        <div class="ss-empty-state">
+          <p class="ss-empty-text" style="color:var(--danger);">Error loading shifts</p>
         </div>
       `;
     }
@@ -158,7 +139,7 @@ export function init() {
   // Show line selection page
   selectLineBtn.onclick = () => {
     landingPage.style.display = 'none';
-    lineSelectionPage.style.display = 'block';
+    lineSelectionPage.style.display = 'flex';
     loadLineSelection();
   };
 
@@ -177,14 +158,12 @@ export function init() {
 
       for (const line of lines) {
         const btn = document.createElement('button');
-        btn.className = 'btn-outline';
-        btn.style.minWidth = '180px';
-        btn.innerHTML = `<span style="font-size:1.4rem;">${line.name}</span><br><span style="font-size:0.85rem;">${line.num_stations} stations</span>`;
+        btn.className = 'ss-line-btn';
+        btn.innerHTML = `<span class="ss-line-btn-name">${line.name}</span><span class="ss-line-btn-stations">${line.num_stations} stations</span>`;
         
         btn.onclick = async () => {
-          lineContainer.querySelectorAll('button').forEach(b => b.classList.remove('btn-primary'));
-          btn.classList.remove('btn-outline');
-          btn.classList.add('btn-primary');
+          lineContainer.querySelectorAll('button').forEach(b => b.classList.remove('ss-line-btn-active'));
+          btn.classList.add('ss-line-btn-active');
           selectedLine = line;
 
           buttonsContainer.innerHTML = '';
@@ -196,14 +175,12 @@ export function init() {
             const activeShifts = await api.get(`/shifts?line_id=${line.id}&active_only=1`);
 
             if (activeShifts && activeShifts.length > 0) {
-              statusEl.innerHTML = `<span style="color:var(--success);font-weight:700;">✓ ${activeShifts.length} Active Shift${activeShifts.length > 1 ? 's' : ''}</span>`;
+              statusEl.innerHTML = `<span class="ss-status-active">${activeShifts.length} Active Shift${activeShifts.length > 1 ? 's' : ''}</span>`;
 
               for (const shift of activeShifts) {
                 const joinBtn = document.createElement('button');
-                joinBtn.className = 'btn-success';
-                joinBtn.style.minWidth = '320px';
-                joinBtn.style.minHeight = '100px';
-                joinBtn.innerHTML = `<span style="font-size:1.3rem;">✓ JOIN SHIFT ${shift.shift_number}</span><br><span style="font-size:0.9rem;opacity:0.8;">Started: ${new Date(shift.started_at).toLocaleTimeString()}</span>`;
+                joinBtn.className = 'ss-action-btn ss-action-join';
+                joinBtn.innerHTML = `JOIN SHIFT ${shift.shift_number}<br><span class="ss-action-sub">Started: ${new Date(shift.started_at).toLocaleTimeString()}</span>`;
                 joinBtn.onclick = () => {
                   db.lineId = line.id;
                   db.shiftId = shift.id;
@@ -214,10 +191,8 @@ export function init() {
               }
 
               const startNewBtn = document.createElement('button');
-              startNewBtn.className = 'btn-primary';
-              startNewBtn.style.minWidth = '320px';
-              startNewBtn.style.minHeight = '100px';
-              startNewBtn.innerHTML = `<span style="font-size:1.3rem;">+ START NEW SHIFT</span><br><span style="font-size:0.9rem;opacity:0.8;">Shift ${suggestedShift}</span>`;
+              startNewBtn.className = 'ss-action-btn ss-action-new';
+              startNewBtn.innerHTML = `START NEW SHIFT<br><span class="ss-action-sub">Shift ${suggestedShift}</span>`;
               startNewBtn.onclick = async () => {
                 const today = new Date().toISOString().split('T')[0];
                 try {
@@ -239,9 +214,7 @@ export function init() {
               statusEl.textContent = `Detected: Shift ${suggestedShift}`;
 
               const startBtn = document.createElement('button');
-              startBtn.className = 'btn-primary';
-              startBtn.style.minWidth = '320px';
-              startBtn.style.minHeight = '120px';
+              startBtn.className = 'ss-action-btn ss-action-start';
               startBtn.textContent = 'START SHIFT';
               startBtn.onclick = async () => {
                 const today = new Date().toISOString().split('T')[0];
@@ -264,9 +237,7 @@ export function init() {
           } catch (err) {
             statusEl.textContent = `Error loading shifts`;
             const startBtn = document.createElement('button');
-            startBtn.className = 'btn-primary';
-            startBtn.style.minWidth = '320px';
-            startBtn.style.minHeight = '120px';
+            startBtn.className = 'ss-action-btn ss-action-start';
             startBtn.textContent = 'START SHIFT';
             startBtn.onclick = async () => {
               const today = new Date().toISOString().split('T')[0];
