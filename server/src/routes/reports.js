@@ -26,24 +26,32 @@ router.get('/overview', (req, res) => {
   `).get(...params);
 
   // Downtime stats
-  const downtimeStats = db.prepare(`
-    SELECT COALESCE(SUM(duration_seconds), 0) as total_downtime_seconds
-    FROM downtime_events
-    WHERE ended_at IS NOT NULL
-    ${shift_id ? ' AND line_id = (SELECT line_id FROM shifts WHERE id = ?)' : ''}
-    ${line_id && !shift_id ? ' AND line_id = ?' : ''}
-  `).get(...(shift_id ? [shift_id] : line_id ? [line_id] : []));
+  let downtimeSql = 'SELECT COALESCE(SUM(duration_seconds), 0) as total_downtime_seconds FROM downtime_events WHERE ended_at IS NOT NULL';
+  const downtimeParams = [];
+  if (shift_id) {
+    downtimeSql += ' AND line_id = (SELECT line_id FROM shifts WHERE id = ?)';
+    downtimeParams.push(shift_id);
+  } else if (line_id && !shift_id) {
+    downtimeSql += ' AND line_id = ?';
+    downtimeParams.push(line_id);
+  }
+  const downtimeStats = db.prepare(downtimeSql).get(...downtimeParams);
 
   // Break stats
-  const breakStats = db.prepare(`
+  let breakSql = `
     SELECT
       COALESCE(SUM(CASE WHEN bt.is_line_level = 1 THEN duration_seconds ELSE 0 END), 0) as meal_break_seconds,
       COALESCE(SUM(CASE WHEN bt.is_line_level = 0 THEN duration_seconds ELSE 0 END), 0) as individual_break_seconds
     FROM break_events be
     JOIN break_types bt ON bt.id = be.break_type_id
     WHERE be.ended_at IS NOT NULL
-    ${shift_id ? ' AND be.shift_id = ?' : ''}
-  `).get(...(shift_id ? [shift_id] : []));
+  `;
+  const breakParams = [];
+  if (shift_id) {
+    breakSql += ' AND be.shift_id = ?';
+    breakParams.push(shift_id);
+  }
+  const breakStats = db.prepare(breakSql).get(...breakParams);
 
   const totalPairs = (cycleStats.total_good_pairs || 0) + (cycleStats.total_bad_pairs || 0);
   const qualityRate = totalPairs > 0 ? (cycleStats.total_good_pairs / totalPairs * 100) : 0;
@@ -68,9 +76,12 @@ router.get('/productive-hours', (req, res) => {
     return res.status(400).json({ error: 'shift_id or (line_id + shift_date) required' });
   }
 
-  const shifts = shift_id
-    ? db.prepare('SELECT * FROM shifts WHERE id = ?').all(shift_id)
-    : db.prepare('SELECT * FROM shifts WHERE line_id = ? AND shift_date = ?').all(line_id, shift_date);
+  let shifts;
+  if (shift_id) {
+    shifts = [db.prepare('SELECT * FROM shifts WHERE id = ?').get(shift_id)].filter(Boolean);
+  } else {
+    shifts = db.prepare('SELECT * FROM shifts WHERE line_id = ? AND shift_date = ?').all(line_id, shift_date);
+  }
 
   const results = [];
   for (const shift of shifts) {
@@ -78,30 +89,21 @@ router.get('/productive-hours', (req, res) => {
       ? (new Date(shift.ended_at) - new Date(shift.started_at)) / 1000
       : (Date.now() - new Date(shift.started_at).getTime()) / 1000;
 
-    // Meal breaks
-    const mealBreaks = db.prepare(
-      `SELECT COALESCE(SUM(duration_seconds), 0) as total FROM break_events
-       WHERE shift_id = ? AND break_type_id = 1 AND ended_at IS NOT NULL`
-    ).get(shift.id);
+    const mealBreaks = db.prepare(`SELECT COALESCE(SUM(duration_seconds), 0) as total FROM break_events
+     WHERE shift_id = ? AND break_type_id = 1 AND ended_at IS NOT NULL`).get(shift.id);
 
-    // Individual breaks
-    const indBreaks = db.prepare(
-      `SELECT COALESCE(SUM(duration_seconds), 0) as total FROM break_events
-       WHERE shift_id = ? AND break_type_id != 1 AND ended_at IS NOT NULL`
-    ).get(shift.id);
+    const indBreaks = db.prepare(`SELECT COALESCE(SUM(duration_seconds), 0) as total FROM break_events
+     WHERE shift_id = ? AND break_type_id != 1 AND ended_at IS NOT NULL`).get(shift.id);
 
-    // Downtime
-    const downtime = db.prepare(
-      `SELECT COALESCE(SUM(duration_seconds), 0) as total FROM downtime_events
-       WHERE line_id = ? AND started_at >= ? AND ended_at IS NOT NULL`
-    ).get(shift.line_id, shift.started_at);
+    const downtime = db.prepare(`SELECT COALESCE(SUM(duration_seconds), 0) as total FROM downtime_events
+     WHERE line_id = ? AND started_at >= ? AND ended_at IS NOT NULL`).get(shift.line_id, shift.started_at);
 
     const productiveSeconds = shiftDuration - (mealBreaks.total || 0) - (downtime.total || 0);
     const productiveHours = Math.max(0, productiveSeconds / 3600);
 
     results.push({
-      shift_id: shift.id,
-      line_id: shift.line_id,
+      shift_id: Number(shift.id),
+      line_id: Number(shift.line_id),
       shift_number: shift.shift_number,
       shift_duration_hours: Math.round(shiftDuration / 3600 * 100) / 100,
       meal_break_hours: Math.round((mealBreaks.total || 0) / 3600 * 100) / 100,
@@ -132,35 +134,33 @@ router.get('/cycle-efficiency', (req, res) => {
     ORDER BY pc.cycle_done_at
   `).all(...params);
 
-  // Recipe compliance (actual cook time within tolerance of target)
   const tolerancePct = parseFloat(getSetting('cook_time_tolerance_percent') || '5') / 100;
 
   let compliantCycles = 0;
-  let tempCompliant = 0;
-  let tempTotal = 0;
-  const tempThreshold = parseFloat(getSetting('temp_alert_threshold_gun') || '10');
-
   for (const c of cycles) {
     if (c.target_cooking_seconds && c.actual_cooking_seconds) {
       const diff = Math.abs(c.actual_cooking_seconds - c.target_cooking_seconds) / c.target_cooking_seconds;
       if (diff <= tolerancePct) compliantCycles++;
     }
-    // Temperature compliance (gun temps within threshold of typical)
-    if (c.gun_temp_stage1) { tempTotal++; }
   }
 
   const recipeCompliance = cycles.length > 0 && compliantCycles > 0
     ? Math.round(compliantCycles / cycles.length * 1000) / 10 : null;
 
-  // Temperature analysis
+  let tempFilter = 'WHERE gun_temp_stage1 IS NOT NULL';
+  if (shiftFilter) tempFilter += shiftFilter.replace('pc.', '');
   const tempAnalysis = db.prepare(`
     SELECT
       AVG(gun_temp_stage1) as avg_gun1, AVG(gun_temp_stage2) as avg_gun2,
       AVG(gun_temp_stage3) as avg_gun3, AVG(gun_temp_stage4) as avg_gun4,
       AVG(mold_temp) as avg_mold_temp,
-      MIN(gun_temp_stage1) as min_gun1, MAX(gun_temp_stage1) as max_gun1
+      MIN(gun_temp_stage1) as min_gun1, MAX(gun_temp_stage1) as max_gun1,
+      MIN(gun_temp_stage2) as min_gun2, MAX(gun_temp_stage2) as max_gun2,
+      MIN(gun_temp_stage3) as min_gun3, MAX(gun_temp_stage3) as max_gun3,
+      MIN(gun_temp_stage4) as min_gun4, MAX(gun_temp_stage4) as max_gun4,
+      MIN(mold_temp) as min_mold_temp, MAX(mold_temp) as max_mold_temp
     FROM production_cycles
-    WHERE gun_temp_stage1 IS NOT NULL ${shiftFilter}
+    ${tempFilter}
   `).get(...params);
 
   res.json({
@@ -173,13 +173,12 @@ router.get('/cycle-efficiency', (req, res) => {
 // EVA consumption report
 router.get('/eva-consumption', (req, res) => {
   const db = getDb();
-  const { line_id, shift_date } = req.query;
+  const { line_id } = req.query;
 
   let filter = '';
   const params = [];
   if (line_id) { filter += ' AND emb.line_id = ?'; params.push(line_id); }
 
-  // By material
   const byMaterial = db.prepare(`
     SELECT emb.material_code, emb.material_color,
       COUNT(*) as batch_count,
@@ -192,15 +191,12 @@ router.get('/eva-consumption', (req, res) => {
     ORDER BY emb.material_code, emb.material_color
   `).all(...params);
 
-  // Cost per pair by material
   const costByMaterial = [];
   for (const mat of byMaterial) {
-    const smallMat = db.prepare(
-      'SELECT cost_per_kg FROM eva_materials WHERE code = ? AND color = ? AND size_type = \'Small\' AND is_active = 1'
-    ).get(mat.material_code, mat.material_color);
-    const bigMat = db.prepare(
-      'SELECT cost_per_kg FROM eva_materials WHERE code = ? AND color = ? AND size_type = \'Big\' AND is_active = 1'
-    ).get(mat.material_code, mat.material_color);
+    const smallMat = db.prepare("SELECT cost_per_kg FROM eva_materials WHERE code = ? AND color = ? AND size_type = 'Small' AND is_active = 1")
+      .get(mat.material_code, mat.material_color);
+    const bigMat = db.prepare("SELECT cost_per_kg FROM eva_materials WHERE code = ? AND color = ? AND size_type = 'Big' AND is_active = 1")
+      .get(mat.material_code, mat.material_color);
 
     costByMaterial.push({
       material_code: mat.material_code,
@@ -224,12 +220,10 @@ router.get('/teams', (req, res) => {
   if (shift_id) { shiftFilter = ' AND s.id = ?'; params.push(shift_id); }
   else if (line_id && shift_date) { shiftFilter = ' AND s.line_id = ? AND s.shift_date = ?'; params.push(line_id, shift_date); }
 
-  const shifts = db.prepare(`
-    SELECT s.* FROM shifts s WHERE 1=1 ${shiftFilter} ORDER BY s.shift_date DESC, s.shift_number
-  `).all(...params);
+  const shiftsList = db.prepare(`SELECT s.* FROM shifts s WHERE 1=1 ${shiftFilter} ORDER BY s.shift_date DESC, s.shift_number`).all(...params);
 
   const results = [];
-  for (const shift of shifts) {
+  for (const shift of shiftsList) {
     const team = db.prepare(`
       SELECT stm.worker_id, w.name, r.name as role_name,
         stm.logged_in_at, stm.logged_out_at, stm.is_active

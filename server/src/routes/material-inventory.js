@@ -18,7 +18,7 @@ router.get('/', (req, res) => {
   if (location) { sql += ' AND mi.location = ?'; params.push(location); }
   if (material_id) { sql += ' AND mi.material_id = ?'; params.push(material_id); }
 
-  const thresholdKg = 100; // from settings ideally
+  const thresholdKg = 100;
   if (low_stock_only === '1') {
     sql += ' AND mi.current_kg < ?';
     params.push(thresholdKg);
@@ -27,11 +27,10 @@ router.get('/', (req, res) => {
 
   const inventory = db.prepare(sql).all(...params);
 
-  // Add estimated pairs producible
   for (const item of inventory) {
     if (item.size_type === 'Small') {
       item.estimated_pairs_producible = item.current_kg > 0
-        ? Math.round(item.current_kg / 0.325) // rough estimate
+        ? Math.round(item.current_kg / 0.325)
         : 0;
     }
   }
@@ -71,27 +70,20 @@ router.post('/replenish', (req, res) => {
   if (!material_id || !kg) return res.status(400).json({ error: 'material_id and kg required' });
 
   const db = getDb();
-  const existing = db.prepare(
-    'SELECT * FROM material_inventory WHERE material_id = ? AND location = ?'
-  ).get(material_id, location || 'Warehouse A');
+  const existing = db.prepare('SELECT * FROM material_inventory WHERE material_id = ? AND location = ?')
+    .get(material_id, location || 'Warehouse A');
 
   if (existing) {
-    db.prepare(
-      `UPDATE material_inventory SET current_kg = current_kg + ?, current_sacks = current_sacks + ?,
-        last_replenished_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`
-    ).run(kg, sacks || 0, existing.id);
+    db.prepare(`UPDATE material_inventory SET current_kg = current_kg + ?, current_sacks = current_sacks + ?,
+      last_replenished_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`).run(kg, sacks || 0, existing.id);
   } else {
-    db.prepare(
-      `INSERT INTO material_inventory (material_id, location, current_kg, current_sacks, last_replenished_at)
-       VALUES (?, ?, ?, ?, datetime('now'))`
-    ).run(material_id, location || 'Warehouse A', kg, sacks || 0);
+    db.prepare(`INSERT INTO material_inventory (material_id, location, current_kg, current_sacks, last_replenished_at)
+     VALUES (?, ?, ?, ?, datetime('now'))`).run(material_id, location || 'Warehouse A', kg, sacks || 0);
   }
 
   // Log transaction
-  db.prepare(
-    `INSERT INTO material_transactions (material_id, type, kg, sacks, notes)
-     VALUES (?, 'replenish', ?, ?, ?)`
-  ).run(material_id, kg, sacks || 0, notes || 'Manual replenishment');
+  db.prepare(`INSERT INTO material_transactions (material_id, type, kg, sacks, notes)
+   VALUES (?, 'replenish', ?, ?, ?)`).run(material_id, kg, sacks || 0, notes || 'Manual replenishment');
 
   queueSync('material_inventory', existing ? existing.id : 0, 'UPDATE');
   res.json({ replenished: true, material_id, kg });
@@ -112,24 +104,16 @@ router.get('/transactions', (req, res) => {
   if (type) { sql += ' AND mt.type = ?'; params.push(type); }
   sql += ' ORDER BY mt.timestamp DESC';
   if (limit) { sql += ' LIMIT ?'; params.push(+limit); }
-  res.json(db.prepare(sql).all(...params));
+  const rows = db.prepare(sql).all(...params);
+  res.json(rows);
 });
 
 // Capacity planning: how many pairs before running out
 router.get('/capacity', (req, res) => {
   const db = getDb();
-  const { line_id } = req.query;
-
-  // Get active recipes from station assignments
-  const assignments = db.prepare(`
-    SELECT sma.recipe_id, sma.injection_feeder, s.line_id
-    FROM station_mold_assignments sma
-    JOIN stations s ON s.id = sma.station_id
-    WHERE sma.unassigned_at IS NULL AND sma.recipe_id IS NOT NULL
-  `).all();
 
   // Get inventory summary
-  const inventory = db.prepare(`
+  const invRows = db.prepare(`
     SELECT em.id, em.code, em.color, em.size_type, SUM(mi.current_kg) as total_kg
     FROM eva_materials em
     LEFT JOIN material_inventory mi ON mi.material_id = em.id
@@ -138,13 +122,13 @@ router.get('/capacity', (req, res) => {
   `).all();
 
   const invMap = {};
-  for (const inv of inventory) {
+  for (const inv of invRows) {
     invMap[inv.id] = inv.total_kg || 0;
   }
 
   // Calculate per-recipe material consumption
-  const capacity = [];
   const recipes = db.prepare('SELECT * FROM recipes WHERE is_active = 1').all();
+  const capacity = [];
   for (const recipe of recipes) {
     const smallAvailable = recipe.small_material_id ? (invMap[recipe.small_material_id] || 0) : 0;
     const bigAvailable = recipe.big_material_id ? (invMap[recipe.big_material_id] || 0) : 0;
@@ -155,8 +139,8 @@ router.get('/capacity', (req, res) => {
     const maxPairs = Math.min(smallPairs, bigAvailable > 0 ? bigPairs : Infinity);
 
     capacity.push({
-      recipe_id: recipe.id,
-      mold_id: recipe.mold_id,
+      recipe_id: Number(recipe.id),
+      mold_id: Number(recipe.mold_id),
       material_code: recipe.material_code,
       material_color: recipe.material_color,
       size_label: recipe.size_label,

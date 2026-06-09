@@ -40,7 +40,7 @@ export function render() {
     <div class="card">
       <div class="card-header">
         <div>
-          <h3 class="card-title\">Cost Analysis by Material</h3>
+          <h3 class="card-title">Cost Analysis by Material</h3>
           <p class="card-subtitle">Material cost per kilogram</p>
         </div>
       </div>
@@ -69,22 +69,22 @@ export async function init() {
     const totalKg = data.by_material.reduce((s, m) => s + (m.total_kg || 0), 0);
     const totalBatches = data.by_material.reduce((s, m) => s + (m.batch_count || 0), 0);
     const totalCost = data.cost_by_material.reduce((s, m) => s + ((m.total_kg || 0) * ((m.small_cost_per_kg + m.big_cost_per_kg) / 2)), 0);
-    
+
     document.getElementById('eva-kpis').innerHTML = `
       <div class="kpi-card success">
         <div class="kpi-label">Total Batches</div>
         <div class="kpi-value">${totalBatches}</div>
-        <div class="kpi-change neutral\">in current shift</div>
+        <div class="kpi-change neutral">current shift</div>
       </div>
       <div class="kpi-card info">
         <div class="kpi-label">Total EVA Used</div>
-        <div class="kpi-value" style="font-size: 28px;">${formatKg(totalKg)}</div>
-        <div class="kpi-change neutral\">kilograms</div>
+        <div class="kpi-value" style="font-size: 24px;">${formatKg(totalKg)}</div>
+        <div class="kpi-change neutral">kilograms consumed</div>
       </div>
       <div class="kpi-card warning">
         <div class="kpi-label">Material Cost</div>
         <div class="kpi-value" style="font-size: 24px;">${formatCurrency(totalCost)}</div>
-        <div class="kpi-change neutral\">total spent</div>
+        <div class="kpi-change neutral">total spent</div>
       </div>
     `;
 

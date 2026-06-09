@@ -5,7 +5,7 @@ const pages = {};
 const pageModules = [
   'overview', 'stations', 'eva-consumption', 'cycle-efficiency', 'defects',
   'downtime', 'breaks', 'teams', 'eva-inventory', 'molds', 'eva-materials',
-  'recipes', 'station-config', 'workers', 'settings'
+  'recipes', 'station-config', 'workers', 'lines', 'settings'
 ];
 
 // Load page modules dynamically
@@ -37,6 +37,7 @@ const navConfig = [
     { id: 'recipes', label: 'Recipes', icon: '📋' },
   ]},
   { section: 'Configuration', items: [
+    { id: 'lines', label: 'Lines & Stations', icon: '🏗️' },
     { id: 'station-config', label: 'Station Config', icon: '⚙️' },
     { id: 'workers', label: 'Workers', icon: '👷' },
     { id: 'settings', label: 'Settings', icon: '🔧' },

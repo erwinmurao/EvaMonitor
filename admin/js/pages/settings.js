@@ -3,11 +3,34 @@ import { api } from '../api.js';
 
 export function render() {
   return `
-    <div class="page-header"><h1>Settings</h1><button class="btn btn-primary" id="btn-save-settings">Save Settings</button></div>
-    <div class="card" id="settings-form"></div>
+    <div class="page-header">
+      <div>
+        <h1>Settings</h1>
+        <p>Configure system parameters and thresholds</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+
+    <div class="card mb-xl">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">System Parameters</h3>
+          <p class="card-subtitle">Default values, thresholds, and timing configuration</p>
+        </div>
+      </div>
+      <div id="settings-form"></div>
+    </div>
+
     <div class="card">
-      <h3>System</h3>
-      <div style="display:flex;gap:8px;margin-top:12px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">System Tools</h3>
+          <p class="card-subtitle">Data export, backup, and sync utilities</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-outline" id="btn-export-csv">Export CSV</button>
         <button class="btn btn-outline" id="btn-backup-db">Backup DB</button>
         <button class="btn btn-outline" id="btn-sync-status">Sync Status</button>
@@ -38,7 +61,7 @@ export async function init() {
   form.innerHTML = fields.map(f => `
     <div class="form-group">
       <label>${f.label}</label>
-      <input type="${f.type}" ${f.step ? `step="${f.step}"` : ''} id="setting-${f.key}" value="${settings[f.key] || ''}">
+      <input type="${f.type}" ${f.step ? `step="${f.step}"` : ''} class="form-control" id="setting-${f.key}" value="${settings[f.key] || ''}">
     </div>
   `).join('');
 

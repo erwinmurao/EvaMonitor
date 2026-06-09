@@ -2,28 +2,25 @@ const express = require('express');
 const { getDb, queueSync } = require('../db');
 const router = express.Router();
 
-// List all EVA materials
 router.get('/', (req, res) => {
   const db = getDb();
+  const { id, inventory } = req.query;
+
+  if (inventory) {
+    const rows = db.prepare('SELECT * FROM material_inventory WHERE material_id = ?').all(inventory);
+    return res.json(rows);
+  }
+
+  if (id) {
+    const mat = db.prepare('SELECT * FROM eva_materials WHERE id = ?').get(id);
+    if (!mat) return res.status(404).json({ error: 'Material not found' });
+    return res.json(mat);
+  }
+
   const materials = db.prepare('SELECT * FROM eva_materials ORDER BY code, color, size_type').all();
   res.json(materials);
 });
 
-router.get('/:id', (req, res) => {
-  const db = getDb();
-  const mat = db.prepare('SELECT * FROM eva_materials WHERE id = ?').get(req.params.id);
-  if (!mat) return res.status(404).json({ error: 'Material not found' });
-  res.json(mat);
-});
-
-// Get inventory for a material
-router.get('/:id/inventory', (req, res) => {
-  const db = getDb();
-  const inventory = db.prepare('SELECT * FROM material_inventory WHERE material_id = ?').all(req.params.id);
-  res.json(inventory);
-});
-
-// Quick Add Pair — creates both Small+Big at once
 router.post('/quick-add-pair', (req, res) => {
   const { code, color, small_sack_size_kg, big_sack_size_kg, small_cost_per_kg, big_cost_per_kg } = req.body;
   if (!code || !color) return res.status(400).json({ error: 'code and color required' });
@@ -66,7 +63,10 @@ router.post('/', (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: 'id query param required' });
+
   const db = getDb();
   const { code, color, size_type, sack_size_kg, cost_per_kg, is_active } = req.body;
   db.prepare(
@@ -75,15 +75,17 @@ router.put('/:id', (req, res) => {
       size_type = COALESCE(?, size_type), sack_size_kg = COALESCE(?, sack_size_kg),
       cost_per_kg = COALESCE(?, cost_per_kg), is_active = COALESCE(?, is_active)
     WHERE id = ?`
-  ).run(code, color, size_type, sack_size_kg, cost_per_kg, is_active, req.params.id);
-  queueSync('eva_materials', req.params.id, 'UPDATE');
-  res.json({ id: +req.params.id, updated: true });
+  ).run(code, color, size_type, sack_size_kg, cost_per_kg, is_active, id);
+  queueSync('eva_materials', id, 'UPDATE');
+  res.json({ id: +id, updated: true });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: 'id query param required' });
   const db = getDb();
-  db.prepare('UPDATE eva_materials SET is_active = 0 WHERE id = ?').run(req.params.id);
-  queueSync('eva_materials', req.params.id, 'UPDATE');
+  db.prepare('UPDATE eva_materials SET is_active = 0 WHERE id = ?').run(id);
+  queueSync('eva_materials', id, 'UPDATE');
   res.json({ deactivated: true });
 });
 

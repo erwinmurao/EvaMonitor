@@ -89,7 +89,7 @@ async function loadStation(stationId) {
   detail.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
   try {
-    const station = await api.get(`/stations/${stationId}`);
+    const station = await api.get(`/stations?id=${stationId}`);
     const assignments = await api.get(`/mold-assignments?station_id=${stationId}`);
     const cycles = await api.get(`/cycles?station_id=${stationId}&limit=20`);
 

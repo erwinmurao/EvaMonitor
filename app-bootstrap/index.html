@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>EVA Monitor Kiosk</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0F172A;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+    .logo {
+      width: 80px; height: 80px;
+      background: #00B4D8;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #F8FAFC;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #94A3B8;
+      margin-bottom: 32px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      color: #94A3B8;
+      margin-bottom: 6px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 18px;
+      background: #1E293B;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      color: #F8FAFC;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: #00B4D8;
+    }
+    input[type="text"]::placeholder {
+      color: #64748B;
+    }
+    .btn-connect {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      background: #00B4D8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn-connect:active {
+      background: #0096B7;
+    }
+    .btn-connect:disabled {
+      background: #334155;
+      color: #64748B;
+    }
+    .error {
+      color: #F87171;
+      font-size: 14px;
+      margin-top: 12px;
+      display: none;
+    }
+    .error.visible { display: block; }
+    .loading {
+      display: none;
+      margin-top: 16px;
+      color: #94A3B8;
+      font-size: 14px;
+    }
+    .loading.visible { display: block; }
+    .hint {
+      font-size: 12px;
+      color: #64748B;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">E</div>
+    <h1>EVA Monitor Kiosk</h1>
+    <p class="subtitle">Production Monitoring System</p>
+
+    <div class="form-group">
+      <label for="server-url">Server URL</label>
+      <input type="text" id="server-url" placeholder="http://192.168.1.100:3000" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="hint">Enter the IP address and port of the EVA Monitor server</p>
+    </div>
+
+    <button class="btn-connect" id="btn-connect">Connect</button>
+
+    <p class="error" id="error-msg"></p>
+    <p class="loading" id="loading-msg">Connecting to server...</p>
+  </div>
+
+  <script>
+    (function() {
+      // Check for saved server URL
+      const savedUrl = localStorage.getItem('eva_server_url');
+      if (savedUrl) {
+        // Redirect to the server's kiosk page
+        window.location.href = savedUrl + '/kiosk/';
+        return;
+      }
+
+      const input = document.getElementById('server-url');
+      const btn = document.getElementById('btn-connect');
+      const errorEl = document.getElementById('error-msg');
+      const loadingEl = document.getElementById('loading-msg');
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.add('visible');
+        loadingEl.classList.remove('visible');
+        btn.disabled = false;
+        btn.textContent = 'Connect';
+      }
+
+      async function connect() {
+        let url = input.value.trim().replace(/\/+$/, '');
+        if (!url) { showError('Please enter a server URL'); return; }
+
+        // Auto-add http:// if no protocol
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'http://' + url;
+        }
+
+        errorEl.classList.remove('visible');
+        loadingEl.classList.add('visible');
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+
+        try {
+          const res = await fetch(url + '/api/health', { method: 'GET', mode: 'cors' });
+          if (!res.ok) throw new Error('Server returned ' + res.status);
+          const data = await res.json();
+          if (data.status !== 'ok') throw new Error('Invalid server response');
+
+          // Save and redirect
+          localStorage.setItem('eva_server_url', url);
+          window.location.href = url + '/kiosk/';
+        } catch (err) {
+          showError('Cannot connect to server: ' + err.message);
+        }
+      }
+
+      btn.addEventListener('click', connect);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') connect();
+      });
+      input.focus();
+    })();
+  </script>
+</body>
+</html>

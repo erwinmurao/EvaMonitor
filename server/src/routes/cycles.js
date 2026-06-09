@@ -6,7 +6,20 @@ const router = express.Router();
 // List production cycles
 router.get('/', (req, res) => {
   const db = getDb();
-  const { station_id, shift_id, line_id, limit, offset, export: exportFormat } = req.query;
+  const { id, station_id, shift_id, line_id, limit, offset, export: exportFormat } = req.query;
+
+  if (id) {
+    const cycle = db.prepare(`
+      SELECT pc.*, s.station_number, s.line_id
+      FROM production_cycles pc
+      JOIN stations s ON s.id = pc.station_id
+      WHERE pc.id = ?
+    `).get(id);
+    if (!cycle) return res.status(404).json({ error: 'Cycle not found' });
+    cycle.outputs = db.prepare('SELECT * FROM cycle_outputs WHERE cycle_id = ?').all(cycle.id);
+    return res.json(cycle);
+  }
+
   let sql = `
     SELECT pc.*, s.station_number, s.line_id
     FROM production_cycles pc
@@ -24,8 +37,9 @@ router.get('/', (req, res) => {
   const cycles = db.prepare(sql).all(...params);
 
   // Attach outputs for each cycle
+  const stmtOutputs = db.prepare('SELECT * FROM cycle_outputs WHERE cycle_id = ?');
   for (const cycle of cycles) {
-    cycle.outputs = db.prepare('SELECT * FROM cycle_outputs WHERE cycle_id = ?').all(cycle.id);
+    cycle.outputs = stmtOutputs.all(cycle.id);
   }
 
   if (exportFormat === 'csv') {
@@ -53,28 +67,16 @@ router.get('/', (req, res) => {
   res.json(cycles);
 });
 
-router.get('/:id', (req, res) => {
-  const db = getDb();
-  const cycle = db.prepare(`
-    SELECT pc.*, s.station_number, s.line_id
-    FROM production_cycles pc
-    JOIN stations s ON s.id = pc.station_id
-    WHERE pc.id = ?
-  `).get(req.params.id);
-  if (!cycle) return res.status(404).json({ error: 'Cycle not found' });
-  cycle.outputs = db.prepare('SELECT * FROM cycle_outputs WHERE cycle_id = ?').all(cycle.id);
-  res.json(cycle);
-});
-
 // Get last cycle for a station (for temperature pre-fill)
-router.get('/last/:station_id', (req, res) => {
+router.get('/last', (req, res) => {
+  const { station_id } = req.query;
   const db = getDb();
-  const cycle = db.prepare(`
+  const row = db.prepare(`
     SELECT gun_temp_stage1, gun_temp_stage2, gun_temp_stage3, gun_temp_stage4, mold_temp
     FROM production_cycles WHERE station_id = ?
     ORDER BY cycle_done_at DESC LIMIT 1
-  `).get(req.params.station_id);
-  res.json(cycle || {});
+  `).get(station_id);
+  res.json(row || {});
 });
 
 // Create a production cycle
@@ -96,18 +98,16 @@ router.post('/', (req, res) => {
   const db = getDb();
 
   const insertCycle = db.transaction(() => {
-    const result = db.prepare(
-      `INSERT INTO production_cycles (
-        station_id, shift_id, cycle_number,
-        mold_a_id, mold_b_id, recipe_a_id, recipe_b_id,
-        mold_a_name, mold_b_name, mold_a_expansion_ratio, mold_b_expansion_ratio,
-        mold_a_size, mold_b_size,
-        eva_batch_feeder1_id, eva_batch_feeder2_id,
-        target_cooking_seconds, actual_cooking_seconds,
-        gun_temp_stage1, gun_temp_stage2, gun_temp_stage3, gun_temp_stage4, mold_temp,
-        injection_at, mold_opened_at, team_member_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
+    const result = db.prepare(`INSERT INTO production_cycles (
+      station_id, shift_id, cycle_number,
+      mold_a_id, mold_b_id, recipe_a_id, recipe_b_id,
+      mold_a_name, mold_b_name, mold_a_expansion_ratio, mold_b_expansion_ratio,
+      mold_a_size, mold_b_size,
+      eva_batch_feeder1_id, eva_batch_feeder2_id,
+      target_cooking_seconds, actual_cooking_seconds,
+      gun_temp_stage1, gun_temp_stage2, gun_temp_stage3, gun_temp_stage4, mold_temp,
+      injection_at, mold_opened_at, team_member_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       station_id, shift_id, cycle_number || 0,
       mold_a_id || null, mold_b_id || null, recipe_a_id || null, recipe_b_id || null,
       mold_a_name || '', mold_b_name || '', mold_a_expansion_ratio || 0, mold_b_expansion_ratio || 0,
@@ -122,21 +122,19 @@ router.post('/', (req, res) => {
 
     // Insert outputs
     if (Array.isArray(outputs)) {
-      const insertOutput = db.prepare(
-        `INSERT INTO cycle_outputs (cycle_id, mold_slot, mold_id, size, good_pairs, bad_pairs)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      );
+      const stmtOutput = db.prepare('INSERT INTO cycle_outputs (cycle_id, mold_slot, mold_id, size, good_pairs, bad_pairs) VALUES (?, ?, ?, ?, ?, ?)');
       for (const out of outputs) {
-        insertOutput.run(cycleId, out.mold_slot, out.mold_id || null, out.size || '', out.good_pairs || 0, out.bad_pairs || 0);
+        stmtOutput.run(cycleId, out.mold_slot, out.mold_id || null, out.size || '', out.good_pairs || 0, out.bad_pairs || 0);
       }
     }
 
-    queueSync('production_cycles', cycleId, 'INSERT');
     return cycleId;
   });
 
   const cycleId = insertCycle();
-  res.status(201).json({ id: cycleId });
+
+  queueSync('production_cycles', cycleId, 'INSERT');
+  res.status(201).json({ id: Number(cycleId) });
 });
 
 module.exports = router;

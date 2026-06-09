@@ -9,6 +9,7 @@ import * as defectReport from './screens/defect-report.js';
 import * as downtime from './screens/downtime.js';
 import * as teamRoster from './screens/team-roster.js';
 import * as roleReassign from './screens/role-reassign.js';
+import * as serverConfig from './screens/server-config.js';
 import { db } from './db.js';
 import { api } from './api.js';
 
@@ -22,7 +23,8 @@ const screens = {
   'defect-report': defectReport,
   'downtime': downtime,
   'team-roster': teamRoster,
-  'role-reassign': roleReassign
+  'role-reassign': roleReassign,
+  'server-config': serverConfig
 };
 
 let currentScreen = null;

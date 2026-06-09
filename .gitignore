@@ -8,7 +8,22 @@ backups/
 
 # Ignore env (contains secrets)
 .env
+.env.local
 
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
+# Vercel
+.vercel
+.vercel-tmp/
+.vercelignore
+api/
+
+# SQLite WAL files
+auth
+auth-wal
+
+# Deploy scripts
+deploy-to-vercel.bat
+init-turso.js

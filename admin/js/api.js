@@ -1,5 +1,5 @@
 /* Admin API Client */
-const API_BASE = window.location.origin + '/api';
+const API_BASE = '/api';
 
 class AdminApi {
   constructor() {

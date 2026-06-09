@@ -1,13 +1,50 @@
-/* Recipes CRUD Page — KEY page */
+/* Recipes CRUD Page */
 import { api } from '../api.js';
 import { formatCurrency } from '../utils/format.js';
 
 export function render() {
   return `
-    <div class="page-header"><h1>Recipes</h1><button class="btn btn-primary" id="btn-add-recipe">+ Add Recipe</button></div>
+    <div class="page-header">
+      <div>
+        <h1>Recipes</h1>
+        <p>Define mold + material + size combinations with cooking parameters</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary" id="btn-add-recipe">+ Add Recipe</button>
+      </div>
+    </div>
+
     <div class="alert alert-info">A recipe defines the tested parameters for a specific mold + material + size combination. Cooking time comes from the recipe, NOT the mold.</div>
-    <div class="card"><table class="data-table" id="recipes-table">
-      <thead><tr><th>ID</th><th>Mold</th><th>Material</th><th>Color</th><th>Size</th><th>Small kg</th><th>Big kg</th><th>Cook Time</th><th>Injection</th><th>Pairs</th><th>Cost/Pair</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Recipe List</h3>
+          <p class="card-subtitle">All production recipes with material requirements and cook times</p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table" id="recipes-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Mold</th>
+              <th>Material</th>
+              <th>Color</th>
+              <th>Size</th>
+              <th>Small (kg)</th>
+              <th>Big (kg)</th>
+              <th>Cook Time</th>
+              <th>Injection</th>
+              <th>Pairs</th>
+              <th>Cost/Pair</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
     <div id="recipe-modal"></div>
   `;
 }
@@ -24,17 +61,28 @@ export async function init() {
   for (const r of recipes) {
     let costPerPair = '-';
     try {
-      const cost = await api.get(`/recipes/${r.id}/cost`);
+      const cost = await api.get(`/recipes?id=${r.id}&cost=1`);
       costPerPair = formatCurrency(cost.total_cost_per_pair);
     } catch {}
 
     tbody.innerHTML += `<tr>
-      <td>${r.id}</td><td>${r.mold_name || r.mold_id}</td><td>${r.material_code}</td><td>${r.material_color}</td>
-      <td>${r.size_label}</td><td>${r.small_kg}</td><td>${r.big_kg}</td>
-      <td><strong>${r.cooking_time_seconds}s</strong></td><td>${r.injection_weight_grams}g</td><td>${r.expected_pairs}</td>
+      <td>${r.id}</td>
+      <td>${r.mold_name || r.mold_id}</td>
+      <td>${r.material_code}</td>
+      <td>${r.material_color}</td>
+      <td>${r.size_label}</td>
+      <td>${r.small_kg}</td>
+      <td>${r.big_kg}</td>
+      <td><strong>${r.cooking_time_seconds}s</strong></td>
+      <td>${r.injection_weight_grams}g</td>
+      <td>${r.expected_pairs}</td>
       <td>${costPerPair}</td>
       <td><button class="btn btn-sm btn-primary" data-edit="${r.id}">Edit</button></td>
     </tr>`;
+  }
+
+  if (recipes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-secondary);">No recipes found</td></tr>';
   }
 
   tbody.querySelectorAll('[data-edit]').forEach(btn => {
@@ -60,18 +108,18 @@ function showRecipeForm(recipe, molds, materials) {
     <div class="modal-backdrop"><div class="modal" style="max-width:700px;">
       <h2>${isEdit ? 'Edit' : 'Add'} Recipe</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group"><label>Mold</label><select id="rf-mold">
+        <div class="form-group"><label>Mold</label><select class="form-control" id="rf-mold">
           ${molds.map(m => `<option value="${m.id}" ${recipe?.mold_id === m.id ? 'selected' : ''}>${m.serial_code} — ${m.name}</option>`).join('')}
         </select></div>
-        <div class="form-group"><label>Material</label><select id="rf-material">
+        <div class="form-group"><label>Material</label><select class="form-control" id="rf-material">
           ${uniqueMats.map(m => `<option value="${m.code}|${m.color}" ${recipe?.material_code === m.code && recipe?.material_color === m.color ? 'selected' : ''}>${m.code} ${m.color}</option>`).join('')}
         </select></div>
-        <div class="form-group"><label>Size Label</label><input id="rf-size" value="${recipe?.size_label || ''}" placeholder="e.g. 35-36"></div>
-        <div class="form-group"><label>Small Pellets (kg)</label><input type="number" step="0.5" id="rf-small-kg" value="${recipe?.small_kg || 0}"></div>
-        <div class="form-group"><label>Big Pellets (kg)</label><input type="number" step="0.5" id="rf-big-kg" value="${recipe?.big_kg || 0}"></div>
-        <div class="form-group"><label>Cooking Time (seconds)</label><input type="number" id="rf-cook-time" value="${recipe?.cooking_time_seconds || 0}"></div>
-        <div class="form-group"><label>Injection Weight (grams)</label><input type="number" id="rf-injection" value="${recipe?.injection_weight_grams || 0}"></div>
-        <div class="form-group"><label>Expected Pairs per Cycle</label><input type="number" id="rf-pairs" value="${recipe?.expected_pairs || 2}"></div>
+        <div class="form-group"><label>Size Label</label><input class="form-control" id="rf-size" value="${recipe?.size_label || ''}" placeholder="e.g. 35-36"></div>
+        <div class="form-group"><label>Small Pellets (kg)</label><input type="number" step="0.5" class="form-control" id="rf-small-kg" value="${recipe?.small_kg || 0}"></div>
+        <div class="form-group"><label>Big Pellets (kg)</label><input type="number" step="0.5" class="form-control" id="rf-big-kg" value="${recipe?.big_kg || 0}"></div>
+        <div class="form-group"><label>Cooking Time (seconds)</label><input type="number" class="form-control" id="rf-cook-time" value="${recipe?.cooking_time_seconds || 0}"></div>
+        <div class="form-group"><label>Injection Weight (grams)</label><input type="number" class="form-control" id="rf-injection" value="${recipe?.injection_weight_grams || 0}"></div>
+        <div class="form-group"><label>Expected Pairs per Cycle</label><input type="number" class="form-control" id="rf-pairs" value="${recipe?.expected_pairs || 2}"></div>
       </div>
       <div class="modal-actions"><button class="btn btn-outline" id="rf-cancel">Cancel</button><button class="btn btn-primary" id="rf-save">Save</button></div>
     </div></div>
@@ -98,7 +146,7 @@ function showRecipeForm(recipe, molds, materials) {
     };
 
     try {
-      if (isEdit) await api.put(`/recipes/${recipe.id}`, data);
+      if (isEdit) await api.put(`/recipes?id=${recipe.id}`, data);
       else await api.post('/recipes', data);
       modal.innerHTML = '';
       init();

@@ -25,7 +25,7 @@ export async function init() {
           <h3 class="card-title">Line ${s.line_id} — Shift ${s.shift_number}</h3>
           <p class="card-subtitle">${s.shift_date}</p>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: right;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
           <div>
             <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Duration</div>
             <div style="font-size: 18px; font-weight: 700;">${s.shift_duration_hours}h</div>

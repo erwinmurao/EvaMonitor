@@ -2,6 +2,7 @@
 import { api } from '../api.js';
 import { db } from '../db.js';
 import { showToast } from '../utils/toast.js';
+import { serverConfig } from '../config.js';
 
 let selectedLine = null;
 
@@ -135,6 +136,21 @@ export function init() {
 
   // Load available shifts on init
   loadAvailableShifts();
+
+  // Long-press on title to open server config (for APK/native mode)
+  document.querySelectorAll('.ss-main-title').forEach(el => {
+    let pressTimer;
+    const startPress = () => {
+      pressTimer = setTimeout(() => window.App.navigate('server-config'), 2000);
+    };
+    const cancelPress = () => clearTimeout(pressTimer);
+    el.addEventListener('touchstart', startPress);
+    el.addEventListener('touchend', cancelPress);
+    el.addEventListener('touchmove', cancelPress);
+    el.addEventListener('mousedown', startPress);
+    el.addEventListener('mouseup', cancelPress);
+    el.addEventListener('mouseleave', cancelPress);
+  });
 
   // Show line selection page
   selectLineBtn.onclick = () => {

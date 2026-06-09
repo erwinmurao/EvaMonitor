@@ -74,7 +74,7 @@ export async function init() {
   tbody.querySelectorAll('[data-deactivate]').forEach(btn => {
     btn.onclick = async () => {
       if (confirm('Deactivate this mold?')) {
-        await api.put(`/molds/${btn.dataset.deactivate}`, { is_active: false });
+        await api.put(`/molds?id=${btn.dataset.deactivate}`, { is_active: false });
         init();
       }
     };
@@ -83,7 +83,7 @@ export async function init() {
   // Activate
   tbody.querySelectorAll('[data-activate]').forEach(btn => {
     btn.onclick = async () => {
-      await api.put(`/molds/${btn.dataset.activate}`, { is_active: true });
+      await api.put(`/molds?id=${btn.dataset.activate}`, { is_active: true });
       init();
     };
   });
@@ -163,7 +163,7 @@ function showMoldForm(mold) {
     };
     
     try {
-      if (isEdit) await api.put(`/molds/${mold.id}`, data);
+      if (isEdit) await api.put(`/molds?id=${mold.id}`, data);
       else await api.post('/molds', data);
       modal.innerHTML = '';
       init();

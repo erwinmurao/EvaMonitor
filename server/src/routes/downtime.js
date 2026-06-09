@@ -18,13 +18,13 @@ router.get('/', (req, res) => {
   if (station_id) { sql += ' AND de.station_id = ?'; params.push(station_id); }
   if (active_only === '1') { sql += ' AND de.ended_at IS NULL'; }
   sql += ' ORDER BY de.started_at DESC';
-  
+
   const downtime = db.prepare(sql).all(...params);
-  
+
   if (exportFormat === 'csv') {
     return sendCSV(res, 'downtime.csv', downtime);
   }
-  
+
   res.json(downtime);
 });
 
@@ -34,35 +34,35 @@ router.post('/', (req, res) => {
   if (!line_id || !downtime_type_id) return res.status(400).json({ error: 'line_id and downtime_type_id required' });
 
   const db = getDb();
-  const result = db.prepare(
-    `INSERT INTO downtime_events (line_id, station_id, downtime_type_id, started_at, notes)
-     VALUES (?, ?, ?, datetime('now'), ?)`
-  ).run(line_id, station_id || null, downtime_type_id, notes || '');
+  const result = db.prepare(`INSERT INTO downtime_events (line_id, station_id, downtime_type_id, started_at, notes)
+   VALUES (?, ?, ?, datetime('now'), ?)`).run(line_id, station_id || null, downtime_type_id, notes || '');
   queueSync('downtime_events', result.lastInsertRowid, 'INSERT');
-  res.status(201).json({ id: result.lastInsertRowid, active: true });
+  res.status(201).json({ id: Number(result.lastInsertRowid), active: true });
 });
 
 // End downtime
-router.put('/:id/end', (req, res) => {
+router.put('/end', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: 'id query param required' });
+
   const db = getDb();
-  const event = db.prepare('SELECT started_at FROM downtime_events WHERE id = ?').get(req.params.id);
+  const event = db.prepare('SELECT started_at FROM downtime_events WHERE id = ?').get(id);
   if (!event) return res.status(404).json({ error: 'Downtime event not found' });
 
   const now = new Date().toISOString();
   const started = new Date(event.started_at);
   const durationSeconds = Math.round((new Date(now) - started) / 1000);
 
-  db.prepare(
-    `UPDATE downtime_events SET ended_at = ?, duration_seconds = ? WHERE id = ?`
-  ).run(now, durationSeconds, req.params.id);
-  queueSync('downtime_events', req.params.id, 'UPDATE');
-  res.json({ id: +req.params.id, ended: true, duration_seconds: durationSeconds });
+  db.prepare('UPDATE downtime_events SET ended_at = ?, duration_seconds = ? WHERE id = ?').run(now, durationSeconds, id);
+  queueSync('downtime_events', id, 'UPDATE');
+  res.json({ id: +id, ended: true, duration_seconds: durationSeconds });
 });
 
 // Downtime types CRUD
 router.get('/types', (req, res) => {
   const db = getDb();
-  res.json(db.prepare('SELECT * FROM downtime_types ORDER BY name').all());
+  const rows = db.prepare('SELECT * FROM downtime_types ORDER BY name').all();
+  res.json(rows);
 });
 
 router.post('/types', (req, res) => {
@@ -71,7 +71,7 @@ router.post('/types', (req, res) => {
   const db = getDb();
   try {
     const result = db.prepare('INSERT INTO downtime_types (name, is_planned) VALUES (?, ?)').run(name, is_planned ? 1 : 0);
-    res.status(201).json({ id: result.lastInsertRowid, name });
+    res.status(201).json({ id: Number(result.lastInsertRowid), name });
   } catch (err) {
     if (err.message.includes('UNIQUE')) return res.status(409).json({ error: 'Downtime type already exists' });
     throw err;

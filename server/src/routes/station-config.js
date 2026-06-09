@@ -11,8 +11,8 @@ router.put('/batch', (req, res) => {
   const errors = [];
   const results = [];
 
-  const updateStation = db.transaction((items) => {
-    for (const item of items) {
+  const processBatch = db.transaction(() => {
+    for (const item of assignments) {
       const { station_id, mold_a_id, mold_b_id, recipe_a_id, recipe_b_id, mold_a_size, mold_b_size, feeder_a, feeder_b } = item;
 
       // Check cooking time compatibility
@@ -32,10 +32,8 @@ router.put('/batch', (req, res) => {
       db.prepare(`UPDATE station_mold_assignments SET unassigned_at = datetime('now')
         WHERE station_id = ? AND mold_slot = 'A' AND unassigned_at IS NULL`).run(station_id);
       if (mold_a_id) {
-        const r = db.prepare(
-          `INSERT INTO station_mold_assignments (station_id, mold_slot, mold_id, current_size, injection_feeder, recipe_id)
-           VALUES (?, 'A', ?, ?, ?, ?)`
-        ).run(station_id, mold_a_id, mold_a_size || '', feeder_a || 1, recipe_a_id || null);
+        const r = db.prepare(`INSERT INTO station_mold_assignments (station_id, mold_slot, mold_id, current_size, injection_feeder, recipe_id)
+         VALUES (?, 'A', ?, ?, ?, ?)`).run(station_id, mold_a_id, mold_a_size || '', feeder_a || 1, recipe_a_id || null);
         queueSync('station_mold_assignments', r.lastInsertRowid, 'INSERT');
       }
 
@@ -43,10 +41,8 @@ router.put('/batch', (req, res) => {
       db.prepare(`UPDATE station_mold_assignments SET unassigned_at = datetime('now')
         WHERE station_id = ? AND mold_slot = 'B' AND unassigned_at IS NULL`).run(station_id);
       if (mold_b_id) {
-        const r = db.prepare(
-          `INSERT INTO station_mold_assignments (station_id, mold_slot, mold_id, current_size, injection_feeder, recipe_id)
-           VALUES (?, 'B', ?, ?, ?, ?)`
-        ).run(station_id, mold_b_id, mold_b_size || '', feeder_b || 2, recipe_b_id || null);
+        const r = db.prepare(`INSERT INTO station_mold_assignments (station_id, mold_slot, mold_id, current_size, injection_feeder, recipe_id)
+         VALUES (?, 'B', ?, ?, ?, ?)`).run(station_id, mold_b_id, mold_b_size || '', feeder_b || 2, recipe_b_id || null);
         queueSync('station_mold_assignments', r.lastInsertRowid, 'INSERT');
       }
 
@@ -54,7 +50,7 @@ router.put('/batch', (req, res) => {
     }
   });
 
-  updateStation(assignments);
+  processBatch();
 
   if (errors.length > 0) {
     return res.status(207).json({ results, errors });

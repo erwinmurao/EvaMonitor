@@ -5,8 +5,8 @@ services:
       dockerfile: server/Dockerfile
     container_name: eva-monitor
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     volumes:
       - db-data:/app/data
       - backups:/app/backups
@@ -19,6 +19,24 @@ services:
       timeout: 5s
       retries: 3
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: eva-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - eva-monitor
+
 volumes:
   db-data:
   backups:
+  caddy-data:
+  caddy-config:

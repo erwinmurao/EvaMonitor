@@ -1,5 +1,6 @@
 /* Kiosk API Client */
-const API_BASE = window.location.origin + '/api';
+const CONVEX_URL = 'http://localhost:3000';
+const API_BASE = (localStorage.getItem('eva_server_url') || CONVEX_URL) + '/api';
 
 class ApiClient {
   constructor() {
@@ -81,24 +82,24 @@ class ApiClient {
 
   shifts = {
     list: (params) => this.get(`/shifts?${new URLSearchParams(params)}`),
-    get: (id) => this.get(`/shifts/${id}`),
+    get: (id) => this.get(`/shifts?id=${id}`),
     start: (data) => this.post('/shifts', data),
-    end: (id) => this.put(`/shifts/${id}/end`),
-    checkin: (id, data) => this.post(`/shifts/${id}/checkin`, data),
-    logout: (id, workerId) => this.put(`/shifts/${id}/logout/${workerId}`),
-    reassign: (id, data) => this.put(`/shifts/${id}/reassign`, data),
-    roster: (id) => this.get(`/shifts/${id}/roster`)
+    end: (id) => this.put(`/shifts/end?id=${id}`),
+    checkin: (id, data) => this.post(`/shifts/checkin?id=${id}`, data),
+    logout: (id, workerId) => this.put(`/shifts/logout?id=${id}&worker_id=${workerId}`),
+    reassign: (id, data) => this.put(`/shifts/reassign?id=${id}`, data),
+    roster: (id) => this.get(`/shifts/roster?id=${id}`)
   };
 
   stations = {
     list: (lineId) => this.get(`/stations?line_id=${lineId}`),
-    get: (id) => this.get(`/stations/${id}`)
+    get: (id) => this.get(`/stations?id=${id}`)
   };
 
   cycles = {
     list: (params) => this.get(`/cycles?${new URLSearchParams(params)}`),
     create: (data) => this.post('/cycles', data),
-    last: (stationId) => this.get(`/cycles/last/${stationId}`)
+    last: (stationId) => this.get(`/cycles/last?station_id=${stationId}`)
   };
 
   evaMixes = {
@@ -115,15 +116,15 @@ class ApiClient {
   downtime = {
     list: (params) => this.get(`/downtime?${new URLSearchParams(params)}`),
     start: (data) => this.post('/downtime', data),
-    end: (id) => this.put(`/downtime/${id}/end`),
+    end: (id) => this.put(`/downtime/end?id=${id}`),
     types: () => this.get('/downtime/types')
   };
 
   breaks = {
     list: (params) => this.get(`/breaks?${new URLSearchParams(params)}`),
     start: (data) => this.post('/breaks', data),
-    end: (id) => this.put(`/breaks/${id}/end`),
-    endMeal: (lineId, shiftId) => this.put(`/breaks/end-meal/${lineId}/${shiftId}`),
+    end: (id) => this.put(`/breaks/end?id=${id}`),
+    endMeal: (lineId, shiftId) => this.put(`/breaks/end-meal?line_id=${lineId}&shift_id=${shiftId}`),
     types: () => this.get('/breaks/types')
   };
 

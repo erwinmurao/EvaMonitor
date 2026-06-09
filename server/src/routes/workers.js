@@ -4,19 +4,20 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const { is_active } = req.query;
+  const { id, is_active } = req.query;
+
+  if (id) {
+    const worker = db.prepare('SELECT id, name, is_active FROM workers WHERE id = ?').get(id);
+    if (!worker) return res.status(404).json({ error: 'Worker not found' });
+    return res.json(worker);
+  }
+
   let sql = 'SELECT * FROM workers WHERE 1=1';
   const params = [];
   if (is_active !== undefined) { sql += ' AND is_active = ?'; params.push(is_active); }
   sql += ' ORDER BY name';
-  res.json(db.prepare(sql).all(...params));
-});
-
-router.get('/:id', (req, res) => {
-  const db = getDb();
-  const worker = db.prepare('SELECT id, name, is_active FROM workers WHERE id = ?').get(req.params.id);
-  if (!worker) return res.status(404).json({ error: 'Worker not found' });
-  res.json(worker);
+  const rows = db.prepare(sql).all(...params);
+  res.json(rows);
 });
 
 router.post('/', (req, res) => {
@@ -26,23 +27,26 @@ router.post('/', (req, res) => {
   const db = getDb();
   const result = db.prepare('INSERT INTO workers (name, pin) VALUES (?, ?)').run(name, pin);
   queueSync('workers', result.lastInsertRowid, 'INSERT');
-  res.status(201).json({ id: result.lastInsertRowid, name });
+  res.status(201).json({ id: Number(result.lastInsertRowid), name });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: 'id query param required' });
   const { name, pin, is_active } = req.body;
   const db = getDb();
-  db.prepare(
-    `UPDATE workers SET name = COALESCE(?, name), pin = COALESCE(?, pin), is_active = COALESCE(?, is_active) WHERE id = ?`
-  ).run(name, pin, is_active, req.params.id);
-  queueSync('workers', req.params.id, 'UPDATE');
-  res.json({ id: +req.params.id, updated: true });
+  db.prepare('UPDATE workers SET name = COALESCE(?, name), pin = COALESCE(?, pin), is_active = COALESCE(?, is_active) WHERE id = ?')
+    .run(name, pin, is_active, id);
+  queueSync('workers', id, 'UPDATE');
+  res.json({ id: +id, updated: true });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: 'id query param required' });
   const db = getDb();
-  db.prepare('UPDATE workers SET is_active = 0 WHERE id = ?').run(req.params.id);
-  queueSync('workers', req.params.id, 'UPDATE');
+  db.prepare('UPDATE workers SET is_active = 0 WHERE id = ?').run(id);
+  queueSync('workers', id, 'UPDATE');
   res.json({ deactivated: true });
 });
 

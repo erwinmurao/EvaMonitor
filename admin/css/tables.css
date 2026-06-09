@@ -44,7 +44,7 @@
 
 .data-table th {
   padding: 16px;
-  text-align: left;
+  text-align: center;
   font-weight: 700;
   color: #6b7280;
   font-size: 12px;
@@ -65,6 +65,7 @@
 .data-table td {
   padding: 16px;
   color: #1f2937;
+  text-align: center;
 }
 
 .data-table tbody tr:last-child {

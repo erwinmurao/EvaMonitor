@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EVA Monitor Kiosk</string>
+    <string name="title_activity_main">EVA Monitor Kiosk</string>
+    <string name="package_name">com.eva.kiosk</string>
+    <string name="custom_url_scheme">com.eva.kiosk</string>
+</resources>
